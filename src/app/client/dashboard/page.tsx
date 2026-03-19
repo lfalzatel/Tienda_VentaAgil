@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, doc, setDoc, updateDoc, onSnapshot, orderBy, serverTimestamp, getDoc } from "firebase/firestore";
-import { Loader2, CreditCard, Phone, ArrowUpRight, TrendingDown, Calendar, Wallet } from "lucide-react";
+import { Loader2, CreditCard, Phone, ArrowUpRight, TrendingDown, Calendar, Wallet, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { SaleDetailModal } from "@/components/admin/SaleDetailModal";
 import { cn } from "@/lib/utils";
@@ -338,12 +338,14 @@ export default function ClientDashboardPage() {
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
-                      tr.type === "sale" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
+                      tr.type === "sale" 
+                        ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500") 
+                        : "bg-emerald-50 text-emerald-600"
                     )}>
                       {loadingSaleId === tr.id ? (
                         <Loader2 size={20} className="animate-spin" />
                       ) : tr.type === "sale" ? (
-                        <ArrowUpRight size={20} />
+                        tr.paymentMethod?.toLowerCase() === 'credit' ? <ArrowUpRight size={20} /> : <ShoppingBag size={20} />
                       ) : (
                         <TrendingDown size={20} />
                       )}
@@ -362,15 +364,18 @@ export default function ClientDashboardPage() {
                     <p className={cn(
                       "text-lg sm:text-xl font-black tracking-tighter leading-none",
                       tr.type === "sale" 
-                        ? (tr.paymentMethod === 'credit' ? "text-red-500" : "text-slate-700") 
+                        ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "text-red-500" : "text-slate-700") 
                         : "text-emerald-500"
                     )}>
-                      {tr.type === "sale" ? (tr.paymentMethod === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
+                      {tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
                     </p>
                     <div className="mt-1.5 flex flex-col items-end">
                       <p className="text-[10px] font-medium text-slate-400">
                         {tr.type === "sale" 
-                          ? (tr.paymentMethod === 'credit' ? 'Compra a crédito' : 'Compra al contado') 
+                          ? (tr.paymentMethod?.toLowerCase() === 'credit' ? 'Compra a crédito' : 
+                             tr.paymentMethod === 'Cash' ? 'Compra en efectivo' : 
+                             tr.paymentMethod === 'Card' ? 'Pago con tarjeta' : 
+                             tr.paymentMethod === 'Digital' ? 'Pago digital' : 'Compra al contado') 
                           : 'Abono a deuda'}
                       </p>
                       {tr.description && tr.description.toLowerCase() !== 'abono a deuda' && (
