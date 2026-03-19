@@ -290,7 +290,8 @@ export default function DashboardPage() {
           details={{
             costOfSoldItems,
             totalPurchases: totalPurchaseExpense,
-            totalSales: stats.totalSales || 0
+            totalSales: stats.totalSales || 0,
+            totalReceived: stats.cashReceived || 0
           }}
         />
 
@@ -331,10 +332,27 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <p className="text-base font-black text-slate-900">${sale.total.toLocaleString("es-CO")}</p>
+                      {(sale.customerName || sale.debtorName) && (
+                        <p className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                          <span>{sale.customerName || sale.debtorName}</span>
+                          {sale.createdAt?.toDate && (
+                            <>
+                              <span className="h-1 w-1 rounded-full bg-slate-300 inline-block"></span>
+                              <span className="text-slate-400">{sale.createdAt.toDate().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </>
+                          )}
+                        </p>
+                      )}
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <span>{sale.paymentMethod}</span>
                         <span className="h-1 w-1 rounded-full bg-slate-200"></span>
                         <span>{sale.items.length} items</span>
+                        {!(sale.customerName || sale.debtorName) && sale.createdAt?.toDate && (
+                          <>
+                            <span className="h-1 w-1 rounded-full bg-slate-200"></span>
+                            <span>{sale.createdAt.toDate().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>

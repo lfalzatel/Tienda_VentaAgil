@@ -95,6 +95,7 @@ interface StatsGridProps {
     costOfSoldItems: number;
     totalPurchases: number;
     totalSales: number;
+    totalReceived?: number;
   };
   filterLabel?: string;
   lowStockProducts?: any[];

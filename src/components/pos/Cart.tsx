@@ -7,9 +7,12 @@ import { useState } from "react";
 import { CheckoutModal } from "./CheckoutModal";
 
 export const Cart = ({ onSuccess }: { onSuccess?: () => void }) => {
-  const { items, removeItem, updateQuantity, getTotal, clearCart, getItemCount } = useCartStore();
+  const { tabs, activeTabId, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const itemCount = getItemCount();
+  
+  const activeTab = tabs.find(t => t.id === activeTabId);
+  const items = activeTab?.items || [];
+  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <div className="flex flex-col h-full bg-white/50 backdrop-blur-xl border-l border-slate-100 p-6">
@@ -103,7 +106,7 @@ export const Cart = ({ onSuccess }: { onSuccess?: () => void }) => {
           <button
             onClick={clearCart}
             disabled={items.length === 0}
-            className="w-full py-3 text-slate-400 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-0"
+            className="w-full py-3 text-slate-400 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
           >
             Vaciar Carrito
           </button>

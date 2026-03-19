@@ -4,12 +4,15 @@ import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { Cart } from "@/components/pos/Cart";
-import { ShoppingCart, X } from "lucide-react";
+import { ShoppingCart, ShoppingBag, X, Plus, User } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
+import { SelectTabClientModal } from "@/components/pos/SelectTabClientModal";
+import { cn } from "@/lib/utils";
 
 export default function POSPage() {
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
-  const { items, getItemCount } = useCartStore();
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const { tabs, activeTabId, addTab, removeTab, setActiveTab, setTabClient, getItemCount } = useCartStore();
 
   return (
     <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
@@ -17,9 +20,9 @@ export default function POSPage() {
       
       <main className="flex-grow flex overflow-hidden relative">
         {/* Left Side: Product Catalog */}
-        <div className="flex-grow p-4 sm:p-6 overflow-hidden">
-          <div className="max-w-7xl mx-auto h-full flex flex-col">
-            <header className="mb-6">
+        <div className="flex-grow p-4 sm:p-6 overflow-hidden flex flex-col">
+          <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
+            <header className="mb-4 shrink-0">
               <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 italic">
                 VentaÁgil
               </h1>
@@ -27,8 +30,67 @@ export default function POSPage() {
                 Selecciona los productos para iniciar una venta
               </p>
             </header>
+
+            {/* Tab Bar Container */}
+            <div className="flex items-end gap-1 mb-4 overflow-x-auto pt-2 px-2 border-b-2 border-slate-200 custom-scrollbar shrink-0 min-h-[48px]">
+              {tabs.map(tab => (
+                <div 
+                  key={tab.id}
+                  onClick={() => {
+                    if (activeTabId === tab.id) {
+                      setIsClientModalOpen(true);
+                    } else {
+                      setActiveTab(tab.id);
+                    }
+                  }}
+                  className={cn(
+                    "group flex items-center justify-between gap-2 px-3 py-2 rounded-t-[14px] transition-all cursor-pointer whitespace-nowrap select-none border-t border-x",
+                    tab.name ? "min-w-[80px] max-w-[160px]" : "min-w-[44px]",
+                    activeTabId === tab.id 
+                      ? "bg-slate-900 border-slate-900 text-white z-10 relative" 
+                      : "bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                    {tab.clientName ? (
+                      <User size={13} className={activeTabId === tab.id ? "text-sky-400" : "text-slate-400"} />
+                    ) : (
+                      <ShoppingBag size={13} className={activeTabId === tab.id ? "text-sky-400" : "text-slate-400"} />
+                    )}
+                    {(tab.clientName || tab.name) && (
+                      <span className="text-xs font-bold truncate">
+                        {tab.clientName ? tab.clientName.split(" ")[0] : tab.name}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {tabs.length > 1 && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeTab(tab.id);
+                      }}
+                      className={cn(
+                        "p-1 rounded-full transition-colors shrink-0",
+                        activeTabId === tab.id ? "hover:bg-white/20 text-white/70" : "hover:bg-slate-300 text-slate-400"
+                      )}
+                    >
+                      <X size={14} strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              
+              <button 
+                onClick={addTab}
+                className="h-[36px] w-[36px] mb-1.5 shrink-0 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-all ml-1"
+                title="Nueva pestaña"
+              >
+                <Plus size={20} strokeWidth={2.5} />
+              </button>
+            </div>
             
-            <div className="flex-grow overflow-hidden">
+            <div className="flex-grow overflow-hidden relative">
               <ProductGrid />
             </div>
           </div>
@@ -57,6 +119,14 @@ export default function POSPage() {
           </div>
         )}
       </main>
+
+      <SelectTabClientModal 
+        isOpen={isClientModalOpen}
+        onClose={() => setIsClientModalOpen(false)}
+        onSelect={(clientId, clientName) => {
+          setTabClient(activeTabId, clientId, clientName);
+        }}
+      />
 
       {/* Mobile Cart Trigger */}
       <button 

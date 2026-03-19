@@ -20,7 +20,8 @@ export const ProductGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const { items, addItem } = useCartStore();
+  const { tabs, activeTabId, addItem } = useCartStore();
+  const items = tabs.find(t => t.id === activeTabId)?.items || [];
 
   useEffect(() => {
     // Escuchar cambios en la colección de productos

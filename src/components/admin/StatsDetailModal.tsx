@@ -70,8 +70,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
       icon: TrendingUp,
       color: "emerald",
       details: [
-        { label: "Ventas Totales", value: data.totalSales || 0, sign: "+", color: "slate" },
-        { label: "Ventas a Crédito (No Ingresado)", value: data.creditSales || 0, sign: "-", color: "rose" },
+        { label: "Ingresos Recibidos", value: data.cashReceived || 0, sign: "+", color: "slate" },
         { label: "Gasto en Compras (Mercancía)", value: data.totalPurchases || 0, sign: "-", color: "rose" },
       ]
     },
@@ -91,7 +90,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
       
       <div className="relative w-full max-w-md max-h-[90dvh] flex flex-col bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
         {/* Header */}
@@ -164,6 +163,17 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                 ))}
               </div>
               
+              {/* Crédito pendiente — referencia informativa, ya excluido de Ingresos Recibidos */}
+              {(data.creditSales || 0) > 0 && (
+                <div className="p-4 bg-rose-50/60 rounded-2xl border border-rose-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-tighter">Ventas a Crédito Pendiente</span>
+                    <span className="text-xs font-black text-red-600">${(data.creditSales || 0).toLocaleString("es-CO")}</span>
+                  </div>
+                  <p className="text-[9px] text-red-600 mt-1 leading-tight font-semibold">Dinero aún no recibido. Es una pérdida de flujo hasta que el cliente pague.</p>
+                </div>
+              )}
+
               <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Referencia de Costo de Venta</span>
@@ -250,7 +260,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
         </div>
 
         {/* Footer */}
-        <div className="p-8 pt-0">
+        <div className="px-8 pb-6 pt-0">
           <button 
             onClick={onClose}
             className="w-full py-4 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"

@@ -35,14 +35,22 @@ interface Debtor {
 }
 
 export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps) => {
-  const { items, getTotal, clearCart } = useCartStore();
+  const { getTotal, removeTab, tabs, activeTabId } = useCartStore();
   const { processSale, isProcessing } = useSales();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
   const [isSuccess, setIsSuccess] = useState(false);
   
   // Debtors selection
+  const activeTab = tabs.find(t => t.id === activeTabId);
+  const items = activeTab?.items || [];
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [selectedDebtorId, setSelectedDebtorId] = useState("");
+
+  useEffect(() => {
+    if (isOpen && activeTab?.clientId) {
+      setSelectedDebtorId(activeTab.clientId);
+    }
+  }, [isOpen, activeTab?.clientId]);
   const [debtorSearch, setDebtorSearch] = useState("");
   const [isAddingNewClient, setIsAddingNewClient] = useState(false);
   const [newClientName, setNewClientName] = useState("");
@@ -76,13 +84,13 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
 
     if (success) {
       setIsSuccess(true);
-      clearCart();
       setTimeout(() => {
         setIsSuccess(false);
         onClose();
         if (onSuccess) onSuccess();
         setPaymentMethod("Cash");
         setSelectedDebtorId("");
+        removeTab(activeTabId);
       }, 2000);
     }
   };
@@ -135,32 +143,32 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
         ) : (
           <>
             {/* Header */}
-            <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Cerrar Venta</h2>
+            <div className="px-5 py-3 flex justify-between items-center border-b border-slate-100">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">Cerrar Venta</h2>
               <button 
                 disabled={isProcessing}
                 onClick={onClose} 
-                className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all"
+                className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh] custom-scrollbar">
+            <div className="p-5 pt-3 space-y-3 overflow-y-auto max-h-[72vh] custom-scrollbar">
               {/* Summary */}
-              <div className="bg-slate-900 rounded-3xl p-6 text-white flex justify-between items-center shadow-xl shadow-slate-900/10">
+              <div className="bg-slate-900 rounded-2xl px-4 py-3 text-white flex justify-between items-center shadow-lg shadow-slate-900/10">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total a Pagar</p>
-                  <p className="text-3xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total a Pagar</p>
+                  <p className="text-xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
                 </div>
-                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
-                  <Hash size={20} className="text-white" />
+                <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center">
+                  <Hash size={16} className="text-white" />
                 </div>
               </div>
 
               {/* Payment Methods */}
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Selecciona Método</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
@@ -173,26 +181,26 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
                       key={m.id}
                       onClick={() => setPaymentMethod(m.id as PaymentMethod)}
                       className={cn(
-                        "flex flex-col items-center gap-3 p-4 rounded-[2rem] border-2 transition-all duration-300",
+                        "flex flex-row items-center justify-center gap-1.5 px-3 py-2 rounded-xl border-2 transition-all duration-300",
                         paymentMethod === m.id 
-                          ? "bg-slate-900 border-slate-900 text-white shadow-xl scale-105" 
-                          : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                          ? "bg-slate-900 border-slate-900 text-white shadow-md scale-105" 
+                          : "bg-white border-slate-100 text-slate-500 hover:border-slate-200 hover:bg-slate-50"
                       )}
                     >
-                      <m.icon size={20} />
-                      <span className="text-[10px] font-black uppercase tracking-wider">{m.label}</span>
+                      <m.icon size={14} />
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">{m.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Debtor Selection */}
-              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+              <div className="space-y-3 animate-in slide-in-from-top-4 duration-300">
                 <div className="relative group">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={16} />
                   <input
                     placeholder="Buscar cliente..."
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-sky-500/20"
                     value={debtorSearch}
                     onChange={(e) => setDebtorSearch(e.target.value)}
                   />
@@ -263,7 +271,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
                 onClick={handleCheckout}
                 disabled={isProcessing}
                 className={cn(
-                  "w-full flex items-center justify-center gap-3 py-5 bg-sky-600 hover:bg-sky-700 text-white rounded-[2rem] font-black text-sm shadow-2xl shadow-sky-600/30 transition-all duration-300 active:scale-[0.98]",
+                  "w-full flex items-center justify-center gap-3 py-4 mt-2 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-sky-600/20 transition-all duration-300 active:scale-[0.98]",
                   isProcessing && "opacity-70 cursor-not-allowed"
                 )}
               >
