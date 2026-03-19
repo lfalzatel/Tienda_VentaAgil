@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/config";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, Eye, EyeOff, Mail } from "lucide-react";
+import { Skull, Eye, EyeOff, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Custom Google and Facebook Icons
@@ -70,8 +70,8 @@ export default function LoginPage() {
       <div className="w-full max-w-[440px] space-y-8 relative z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
         {/* Logo Section */}
         <div className="text-center group">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-2xl shadow-sky-200 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
-            <ShoppingBag className="h-10 w-10" />
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-[2rem] bg-[#0f2922] border border-emerald-500/30 text-emerald-400 shadow-2xl shadow-emerald-900/20 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
+            <Skull className="h-10 w-10 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
           </div>
           <h1 className="mt-8 text-4xl font-black tracking-tighter text-slate-900 italic">
             VentaÁgil

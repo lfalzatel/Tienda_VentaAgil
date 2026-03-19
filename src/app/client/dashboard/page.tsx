@@ -58,17 +58,75 @@ export default function ClientDashboardPage() {
         const dDoc = snap.docs[0];
         setDebtor({ id: dDoc.id, ...dDoc.data() } as DebtorData);
 
-        // Fetch transactions for this debtor
+        // We need to fetch both all sales and payments separately
+        let currentSales: Transaction[] = [];
+        let currentPayments: Transaction[] = [];
+
+        const updateTransactionsState = () => {
+          const merged: Transaction[] = [...currentSales];
+          
+          currentPayments.forEach(pt => {
+            if (pt.type === "payment") {
+              merged.push(pt);
+            } else if (pt.type === "sale") {
+               // To avoid duplicates of old credit sales that might not have a debtorId in the 'sales' collection
+               const exists = merged.find(s => s.id === pt.saleId);
+               if (!exists) merged.push(pt);
+            }
+          });
+
+          merged.sort((a, b) => {
+            const dateA = a.date?.seconds || 0;
+            const dateB = b.date?.seconds || 0;
+            return dateB - dateA;
+          });
+          setTransactions(merged);
+          setLoading(false);
+        };
+
+        const qSales = query(
+          collection(db, "sales"),
+          where("debtorId", "==", dDoc.id)
+        );
+
+        const unsubSales = onSnapshot(qSales, (tSnap) => {
+          currentSales = tSnap.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              type: "sale" as const,
+              amount: data.total,
+              date: data.createdAt,
+              saleId: doc.id
+            };
+          });
+          updateTransactionsState();
+        });
+
         const qTrans = query(
           collection(db, "debtor_transactions"),
-          where("debtorId", "==", dDoc.id),
-          orderBy("date", "desc")
+          where("debtorId", "==", dDoc.id)
         );
-        onSnapshot(qTrans, (tSnap) => {
-          const docs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
-          setTransactions(docs);
-          setLoading(false);
+
+        const unsubTrans = onSnapshot(qTrans, (tSnap) => {
+          currentPayments = tSnap.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              type: data.type as "sale" | "payment",
+              amount: data.amount,
+              date: data.date,
+              saleId: data.saleId,
+              description: data.description
+            };
+          });
+          updateTransactionsState();
         });
+
+        return () => {
+          unsubSales();
+          unsubTrans();
+        };
       } else {
         // En teoría no debería pasar si fue onboarded
         setDebtor(null);
