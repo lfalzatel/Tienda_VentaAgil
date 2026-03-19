@@ -1,21 +1,23 @@
 {
-  "name": "Tienda POS - Sistema de Ventas",
-  "short_name": "Tienda POS",
-  "description": "Sistema de Punto de Venta moderno",
+  "name": "VentaÁgil",
+  "short_name": "VentaÁgil",
+  "description": "Sistema de Punto de Venta ágil y moderno",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
+  "theme_color": "#10b981",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/app-icon.svg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/app-icon.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

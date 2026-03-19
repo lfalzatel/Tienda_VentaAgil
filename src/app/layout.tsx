@@ -14,10 +14,18 @@ const geistMono = Geist_Mono({
 
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { PWAProvider } from "@/components/layout/PWAProvider";
 
 export const metadata: Metadata = {
   title: "VentaÁgil | Sistema de Ventas",
   description: "Sistema de ventas ágil y moderno para tu negocio",
+  manifest: "/manifest.json",
+  themeColor: "#10b981",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "VentaÁgil",
+  },
 };
 
 export default function RootLayout({
@@ -31,6 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <PWAProvider />
           {children}
           <BottomNav />
         </AuthProvider>

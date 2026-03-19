@@ -17,24 +17,17 @@ import { auth } from "@/lib/firebase/config";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { usePWAStore } from "@/store/usePWAStore";
 import { cn } from "@/lib/utils";
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuthStore();
+  const { deferredPrompt, setDeferredPrompt } = usePWAStore();
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -42,7 +35,6 @@ export const UserMenu = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
