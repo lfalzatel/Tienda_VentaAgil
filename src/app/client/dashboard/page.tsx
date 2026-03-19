@@ -360,23 +360,20 @@ export default function ClientDashboardPage() {
                   <div className="text-right flex flex-col items-end">
                     <p className={cn(
                       "text-lg sm:text-xl font-black tracking-tighter leading-none",
-                      tr.type === "sale" ? "text-red-500" : "text-emerald-500"
+                      tr.type === "sale" 
+                        ? (tr.paymentMethod === 'credit' ? "text-red-500" : "text-slate-700") 
+                        : "text-emerald-500"
                     )}>
-                      {tr.type === "sale" ? "+" : "-"}${tr.amount.toLocaleString("es-CO")}
+                      {tr.type === "sale" ? (tr.paymentMethod === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
                     </p>
                     <div className="mt-1.5 flex flex-col items-end">
-                      <span className={cn(
-                        "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                        tr.type === "sale" 
-                          ? (tr.paymentMethod === 'credit' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100')
-                          : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                      )}>
+                      <p className="text-[10px] font-medium text-slate-400">
                         {tr.type === "sale" 
-                          ? (tr.paymentMethod === 'credit' ? 'Compra a Crédito' : 'Compra al Contado') 
-                          : 'Abono a Deuda'}
-                      </span>
-                      {tr.description && (
-                         <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate mt-1">{tr.description}</p>
+                          ? (tr.paymentMethod === 'credit' ? 'Compra a crédito' : 'Compra al contado') 
+                          : 'Abono a deuda'}
+                      </p>
+                      {tr.description && tr.description.toLowerCase() !== 'abono a deuda' && (
+                         <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate mt-0.5">{tr.description}</p>
                       )}
                     </div>
                   </div>
