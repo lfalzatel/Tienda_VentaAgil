@@ -10,7 +10,8 @@ import {
   Wallet,
   Home,
   History,
-  QrCode
+  QrCode,
+  ReceiptText
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -32,14 +33,15 @@ export const BottomNav = () => {
   const clientNavItems = [
     { label: "Resumen", path: "/client/dashboard", icon: Home },
     { label: "Historial", path: "/client/history", icon: History },
+    { label: "Mis Gastos", path: "/client/expenses", icon: ReceiptText },
     { label: "Mi Código", path: "/client/qr", icon: QrCode },
   ];
 
   const navItems = user.role === "client" ? clientNavItems : adminNavItems;
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] max-w-fit px-4">
-      <nav className="flex items-center gap-1 p-2 bg-white/95 border border-slate-200/60 rounded-[2rem] shadow-lg justify-center">
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[60] w-[calc(100vw-24px)] max-w-sm">
+      <nav className="flex items-end justify-around px-1 py-2 bg-white/90 backdrop-blur-2xl border border-emerald-100 rounded-[2rem] shadow-2xl shadow-emerald-900/10">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;
@@ -48,28 +50,42 @@ export const BottomNav = () => {
             <Link
               key={item.path}
               href={item.path}
-              className={cn(
-                "relative flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 min-w-[70px] group pointer-events-auto cursor-pointer",
-                isActive 
-                  ? "text-emerald-500 font-black" 
-                  : "text-slate-600 hover:text-slate-900"
-              )}
+              className="relative flex flex-col items-center justify-end flex-1 py-1 group cursor-pointer"
+              style={{ transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
             >
-              <div className={cn(
-                "p-1.5 rounded-xl transition-all duration-500",
-                isActive ? "bg-emerald-500/15 scale-110" : "group-hover:bg-slate-100/80"
-              )}>
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+              {/* Icon bubble - jumps up when active */}
+              <div
+                className={cn(
+                  "flex items-center justify-center rounded-2xl transition-all flex-shrink-0",
+                  isActive
+                    ? "bg-emerald-500 h-9 w-9 -translate-y-3 shadow-lg shadow-emerald-500/50"
+                    : "bg-transparent h-7 w-7 translate-y-0 group-hover:-translate-y-1"
+                )}
+                style={{ transition: "all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
+              >
+                <Icon
+                  size={isActive ? 17 : 16}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  className={cn(
+                    "transition-colors duration-300",
+                    isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-600"
+                  )}
+                />
               </div>
-              <span className={cn(
-                "text-[9px] mt-1 transition-all duration-300 uppercase tracking-widest font-black",
-                isActive ? "opacity-100" : "opacity-60 group-hover:opacity-100"
-              )}>
+
+              {/* Label */}
+              <span
+                className={cn(
+                  "text-[8px] font-black uppercase tracking-wider transition-all duration-300 leading-none mt-0.5 truncate max-w-full px-0.5",
+                  isActive ? "text-emerald-600 opacity-100" : "text-slate-400 opacity-70 group-hover:opacity-100 group-hover:text-emerald-600"
+                )}
+              >
                 {item.label}
               </span>
-              
+
+              {/* Active dot */}
               {isActive && (
-                <div className="absolute -bottom-1 h-1 w-1 bg-emerald-400 rounded-full animate-pulse" />
+                <div className="absolute -bottom-0.5 h-1 w-1 bg-emerald-400 rounded-full" />
               )}
             </Link>
           );

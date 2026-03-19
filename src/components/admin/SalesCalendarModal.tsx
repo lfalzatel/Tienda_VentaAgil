@@ -99,7 +99,7 @@ export const SalesCalendarModal = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
         {/* Header */}
         <div className="p-8 border-b border-slate-50 flex justify-between items-center">
@@ -137,8 +137,8 @@ export const SalesCalendarModal = ({
 
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2">
-            {["D", "L", "M", "M", "J", "V", "S"].map(d => (
-              <div key={d} className="text-center text-[10px] font-black text-slate-300 py-2 uppercase tracking-widest">
+            {["D", "L", "Ma", "Mi", "J", "V", "S"].map((d, idx) => (
+              <div key={idx} className="text-center text-[10px] font-black text-slate-300 py-2 uppercase tracking-widest">
                 {d}
               </div>
             ))}

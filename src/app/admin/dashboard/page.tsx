@@ -91,7 +91,7 @@ export default function DashboardPage() {
       }));
     });
 
-    const qStock = query(collection(db, "products"), where("stock", "<", 5));
+    const qStock = query(collection(db, "products"), where("stock", "<=", 5));
     const unsubStock = onSnapshot(qStock, (snap) => {
       setStats((prev: any) => ({ ...prev, lowStockCount: snap.size }));
       setLowStockProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));

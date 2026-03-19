@@ -181,7 +181,8 @@ export default function ClientDashboardPage() {
         cedula: cedulaInput,
         phone: phoneInput || null,
         email: user.email,
-        role: "client"
+        // No sobreescribir el rol existente — merge:true preserva los demás campos.
+        // useAuth.ts asigna "client" por defecto solo si el doc no existe.
       }, { merge: true });
 
       // Actualizar estado local

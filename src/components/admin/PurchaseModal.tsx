@@ -163,16 +163,16 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
       )}>
         <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
           {/* Header */}
-          <div className="p-3 md:p-6 md:pb-3 bg-gradient-to-r from-blue-50 to-cyan-50 flex justify-between items-center border-b-2 border-blue-200">
+          <div className="p-4 md:p-6 md:pb-4 bg-gradient-to-r from-emerald-500 to-cyan-600 flex justify-between items-center border-b-2 border-emerald-600">
             <div>
-              <h2 className="text-xl md:text-2xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-tight">
+              <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
                 {step === 1 ? "Seleccionar Productos" : "Editar Detalles"}
               </h2>
-              <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                {selectedProductIds.length} seleccionados
+              <p className="text-[8px] md:text-[10px] font-bold text-emerald-100/80 uppercase tracking-widest mt-0.5">
+                {selectedProductIds.length} seleccionados · Registrar Compra
               </p>
             </div>
-            <button type="button" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-900 rounded-lg transition-all">
+            <button type="button" onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-2xl transition-all">
               <X size={20} />
             </button>
           </div>

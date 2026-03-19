@@ -1,9 +1,8 @@
 "use client";
 
-import { X, Package, Database, Edit2, AlertTriangle, ExternalLink } from "lucide-react";
+import { X, Package, Database, AlertTriangle, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { ProductModal } from "./ProductModal";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id?: string;
@@ -23,14 +22,13 @@ interface LowStockModalProps {
 }
 
 export const LowStockModal = ({ isOpen, onClose, products }: LowStockModalProps) => {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const router = useRouter();
 
   if (!isOpen) return null;
 
-  const handleEdit = (product: Product) => {
-    setSelectedProduct(product);
-    setIsEditModalOpen(true);
+  const handleGoToPurchases = () => {
+    onClose();
+    router.push("/admin/purchases");
   };
 
   return (
@@ -51,7 +49,7 @@ export const LowStockModal = ({ isOpen, onClose, products }: LowStockModalProps)
                     Stock Crítico
                   </h2>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    {products.length} productos con menos de 5 unidades
+                    {products.length} productos con 5 unidades o menos
                   </p>
                 </div>
               </div>
@@ -97,13 +95,6 @@ export const LowStockModal = ({ isOpen, onClose, products }: LowStockModalProps)
                           </span>
                         </div>
                       </div>
-
-                      <button 
-                        onClick={() => handleEdit(product)}
-                        className="p-3 bg-white text-slate-400 hover:text-slate-900 hover:shadow-lg rounded-2xl transition-all border border-slate-100"
-                      >
-                        <Edit2 size={18} />
-                      </button>
                     </div>
                   ))
                 )}
@@ -111,28 +102,26 @@ export const LowStockModal = ({ isOpen, onClose, products }: LowStockModalProps)
             </div>
 
             {/* Footer */}
-            <div className="p-8 bg-slate-50 border-t border-slate-100">
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-3">
               <button
                 onClick={onClose}
-                className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-4 bg-white text-slate-500 font-black rounded-2xl border border-slate-200 hover:bg-slate-100 transition-all"
               >
                 Cerrar
+              </button>
+              <button
+                onClick={handleGoToPurchases}
+                className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+              >
+                <ShoppingCart size={18} />
+                Ir a Comprar
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      {isEditModalOpen && (
-        <ProductModal 
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          product={selectedProduct}
-        />
-      )}
     </>
   );
 };
+
+

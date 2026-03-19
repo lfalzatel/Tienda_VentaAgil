@@ -53,10 +53,10 @@ export default function ClientsPage() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
+    <div className="min-h-screen bg-[#f8fafc]">
       <Header />
       
-      <main className="flex-grow p-6 sm:p-10 overflow-hidden flex flex-col max-w-7xl mx-auto w-full pb-32">
+      <main className="p-6 sm:p-10 max-w-7xl mx-auto w-full pb-32">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
@@ -122,7 +122,7 @@ export default function ClientsPage() {
         </div>
 
         {/* List Grid */}
-        <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
+        <div className="">
           {loading ? (
              <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
