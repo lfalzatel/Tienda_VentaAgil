@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider, facebookProvider } from "@/lib/firebase/config";
+import { auth, googleProvider } from "@/lib/firebase/config";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Eye, EyeOff, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,11 +17,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const FacebookIcon = () => (
-  <svg className="h-5 w-5" viewBox="0 0 24 24">
-    <path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </svg>
-);
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -41,7 +37,7 @@ export default function LoginPage() {
       router.push("/pos");
     } catch (err: any) {
       console.error(err);
-      setError("Credenciales inválidas. Por favor intenta de nuevo.");
+      setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -77,8 +73,8 @@ export default function LoginPage() {
           <div className="inline-flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-2xl shadow-sky-200 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
             <ShoppingBag className="h-10 w-10" />
           </div>
-          <h1 className="mt-8 text-4xl font-black tracking-tighter text-slate-900">
-            Tienda POS
+          <h1 className="mt-8 text-4xl font-black tracking-tighter text-slate-900 italic">
+            VentaÁgil
           </h1>
           <p className="mt-3 text-base text-slate-500 font-medium">
             Acceso inteligente para tu tienda
@@ -87,6 +83,26 @@ export default function LoginPage() {
 
         {/* Form Container */}
         <div className="bg-white/80 backdrop-blur-2xl border border-white/50 p-10 rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)]">
+          {/* Social Login (Primary) */}
+          <button
+            onClick={() => handleSocialLogin(googleProvider)}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-8 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-bold text-slate-700 active:scale-[0.97] shadow-sm"
+          >
+            <GoogleIcon />
+            <span>Entrar con Google</span>
+          </button>
+
+          {/* Divider */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-100"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white/0 px-4 text-slate-400 font-bold tracking-widest backdrop-blur-sm">Acceso Administrador</span>
+            </div>
+          </div>
+
           <form className="space-y-6" onSubmit={handleLogin}>
             {error && (
               <div className="p-4 text-sm font-medium text-red-600 bg-red-50/50 border border-red-100 rounded-2xl animate-shake">
@@ -156,36 +172,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-100"></span>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white/0 px-4 text-slate-400 font-bold tracking-widest backdrop-blur-sm">O continuar con</span>
-            </div>
-          </div>
-
-          {/* Social Logins */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => handleSocialLogin(googleProvider)}
-              disabled={loading}
-              className="flex items-center justify-center gap-3 px-4 py-3.5 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-semibold text-slate-700 active:scale-[0.97]"
-            >
-              <GoogleIcon />
-              <span className="text-sm">Google</span>
-            </button>
-            <button
-              onClick={() => handleSocialLogin(facebookProvider)}
-              disabled={loading}
-              className="flex items-center justify-center gap-3 px-4 py-3.5 border border-slate-200 rounded-2xl bg-[#1877F2] hover:bg-[#166fe5] transition-all duration-300 font-semibold text-white active:scale-[0.97] shadow-lg shadow-blue-500/20"
-            >
-              <FacebookIcon />
-              <span className="text-sm">Facebook</span>
-            </button>
-          </div>
         </div>
 
         {/* Footer info */}
