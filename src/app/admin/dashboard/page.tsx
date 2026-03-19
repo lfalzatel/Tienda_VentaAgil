@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { collection, onSnapshot, query, where, Timestamp, limit, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { Header } from "@/components/layout/Header";
@@ -27,6 +27,9 @@ interface Sale {
   paymentMethod: string;
   createdAt: any;
   items: any[];
+  debtorId?: string;
+  customerName?: string;
+  debtorName?: string;
 }
 
 export default function DashboardPage() {
@@ -35,30 +38,62 @@ export default function DashboardPage() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<any>({
     totalSales: 0,
     cashReceived: 0,
     creditSales: 0,
     netProfit: 0,
     totalDebt: 0,
     lowStockCount: 0,
-    activeCustomers: 0,
+    activeCustomersCount: 0,
+    totalPurchases: 0,
+    recentCreditSales: []
   });
   
   const [allSales, setAllSales] = useState<Sale[]>([]);
   const [recentSales, setRecentSales] = useState<Sale[]>([]);
+  const [totalPurchaseExpense, setTotalPurchaseExpense] = useState(0);
   const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
+  const [costOfSoldItems, setCostOfSoldItems] = useState(0);
+  const allDebtorsMap = useRef<Record<string, string>>({});
 
-  // 1. Escuchar saldos de deudores y productos (Estático)
+  // 1. Escuchar saldos de deudores y productos (Estático/Global)
   useEffect(() => {
     const unsubDebtors = onSnapshot(collection(db, "debtors"), (snap) => {
-      const total = snap.docs.reduce((acc, d) => acc + (d.data().totalDebt || 0), 0);
-      setStats(prev => ({ ...prev, totalDebt: total, activeCustomers: snap.size }));
+      const debtorsList: any[] = [];
+      const debtorsMap: Record<string, string> = {};
+      let total = 0;
+      
+      snap.docs.forEach(doc => {
+        const data = doc.data();
+        debtorsMap[doc.id] = data.name || "Sin nombre";
+        const debt = data.totalDebt || 0;
+        if (debt > 0) {
+          total += debt;
+          debtorsList.push({
+            id: doc.id,
+            name: data.name || "Sin nombre",
+            balance: debt
+          });
+        }
+      });
+
+      // Ordenar por mayor deuda para el modal
+      const topDebtors = debtorsList.sort((a, b) => b.balance - a.balance).slice(0, 10);
+      
+      allDebtorsMap.current = debtorsMap;
+
+      setStats((prev: any) => ({ 
+        ...prev, 
+        totalDebt: total, 
+        activeCustomersCount: debtorsList.length,
+        debtors: topDebtors
+      }));
     });
 
     const qStock = query(collection(db, "products"), where("stock", "<", 5));
     const unsubStock = onSnapshot(qStock, (snap) => {
-      setStats(prev => ({ ...prev, lowStockCount: snap.size }));
+      setStats((prev: any) => ({ ...prev, lowStockCount: snap.size }));
       setLowStockProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
@@ -97,41 +132,102 @@ export default function DashboardPage() {
       q = query(q, where("createdAt", "<=", Timestamp.fromDate(end)));
     }
 
+    // Listener para ventas
     const unsubSales = onSnapshot(q, (snap) => {
       const sales = snap.docs.map(d => ({ id: d.id, ...d.data() } as Sale));
       
       let total = 0;
-      let cash = 0;
+      let cashOnly = 0;
+      let card = 0;
+      let digital = 0;
       let credit = 0;
-      let profit = 0;
+      let costOfSoldItemsCount = 0;
+      const creditSalesList: any[] = [];
 
       sales.forEach(sale => {
         total += sale.total || 0;
-        if (sale.paymentMethod === "Cash") cash += sale.total || 0;
-        if (sale.paymentMethod === "Credit") credit += sale.total || 0;
+        if (sale.paymentMethod === "Cash") cashOnly += sale.total || 0;
+        if (sale.paymentMethod === "Card") card += sale.total || 0;
+        if (sale.paymentMethod === "Digital") digital += sale.total || 0;
+        if (sale.paymentMethod === "Credit") {
+          credit += sale.total || 0;
+          creditSalesList.push(sale);
+        }
         
-        // Calcular ganancia neta basada en el histórico de costPrice guardado en la venta
         sale.items?.forEach((item: any) => {
           const cost = item.costPrice || 0;
-          const price = item.price || 0;
           const qty = item.quantity || 0;
-          profit += (price - cost) * qty;
+          costOfSoldItemsCount += cost * qty;
         });
       });
       
-      setAllSales(sales);
-      setRecentSales(sales.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate()).slice(0, 10));
-      setStats(prev => ({ 
+      setCostOfSoldItems(costOfSoldItemsCount);
+
+      // Enriquecer TODAS las ventas con customerName y debtorName
+      const enrichedSales = sales.map(sale => {
+         if (sale.paymentMethod === "Credit") {
+             const fallbackName = sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null;
+             const name = sale.customerName || fallbackName || "Cliente Desconocido";
+             return { ...sale, customerName: name, debtorName: name };
+         }
+         return sale;
+      });
+
+      setAllSales(enrichedSales);
+      setRecentSales([...enrichedSales].sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate()).slice(0, 10));
+
+      const enrichedCreditSales = enrichedSales
+        .filter(s => s.paymentMethod === "Credit")
+        .sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+      
+      setStats((prev: any) => ({ 
         ...prev, 
-        totalSales: total,
-        cashReceived: cash,
+        cashReceived: cashOnly + card + digital,
+        cashOnlyReceived: cashOnly,
+        cardReceived: card,
+        digitalReceived: digital,
         creditSales: credit,
-        netProfit: profit
+        totalSales: total,
+        recentCreditSales: enrichedCreditSales
       }));
     });
 
-    return () => unsubSales();
+    // 2. Listener para compras en el mismo rango de fechas
+    let qPurchases = query(
+      collection(db, "purchases"),
+      where("createdAt", ">=", Timestamp.fromDate(start))
+    );
+
+    if (end) {
+      qPurchases = query(qPurchases, where("createdAt", "<=", Timestamp.fromDate(end)));
+    }
+
+    const unsubPurchases = onSnapshot(qPurchases, (snap) => {
+      let totalSpent = 0;
+      snap.docs.forEach(doc => {
+        totalSpent += doc.data().total || 0;
+      });
+      
+      setTotalPurchaseExpense(totalSpent);
+      setStats((prev: any) => ({
+        ...prev,
+        totalPurchases: totalSpent
+      }));
+    });
+
+    return () => {
+      unsubSales();
+      unsubPurchases();
+    };
   }, [activeFilter, selectedDate]);
+
+  // 3. Recalcular ganancia neta cuando cambien costos o gastos de compras
+  useEffect(() => {
+    setStats((prev: any) => ({
+      ...prev,
+      netProfit: prev.cashReceived - totalPurchaseExpense
+    }));
+  }, [totalPurchaseExpense, stats.cashReceived]);
 
   // Generar datos para el gráfico basados en las ventas filtradas
   const chartData = useMemo(() => {
@@ -162,14 +258,14 @@ export default function DashboardPage() {
       
       <main className="flex-grow p-6 sm:p-10 overflow-y-auto custom-scrollbar max-w-7xl mx-auto w-full space-y-10 pb-20">
         {/* Page Header */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="h-16 w-16 bg-slate-900 rounded-[2.2rem] flex items-center justify-center text-white shadow-xl shadow-slate-900/10">
-              <TrendingUp size={28} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-slate-900/10">
+              <TrendingUp size={22} />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tighter text-slate-900">Dashboard</h1>
-              <p className="text-slate-500 font-medium text-sm mt-1">Resumen operativo de VentaÁgil</p>
+              <h1 className="text-2xl font-black tracking-tighter text-slate-900">Dashboard</h1>
+              <p className="text-slate-500 font-medium text-xs mt-0.5">Resumen operativo de VentaÁgil</p>
             </div>
           </div>
 
@@ -190,6 +286,12 @@ export default function DashboardPage() {
           stats={stats} 
           filterLabel={filterLabel}
           lowStockProducts={lowStockProducts} 
+          onViewSale={(sale: Sale) => setSelectedSale(sale)}
+          details={{
+            costOfSoldItems,
+            totalPurchases: totalPurchaseExpense,
+            totalSales: stats.totalSales || 0
+          }}
         />
 
         {/* Charts & Recent Activity */}
@@ -250,12 +352,6 @@ export default function DashboardPage() {
               )}
             </div>
             
-            <Link 
-              href="/admin/reports" 
-              className="mt-8 py-4 w-full bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest text-center transition-all active:scale-[0.98]"
-            >
-              Reporte Detallado
-            </Link>
           </div>
         </div>
       </main>

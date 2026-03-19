@@ -38,9 +38,9 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
         onClick={onClose}
       />
       
-      <div className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300">
+      <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300">
         {/* Header */}
-        <div className="bg-slate-900 p-8 text-white relative">
+        <div className="bg-slate-900 p-6 text-white relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
           
           <div className="flex justify-between items-center relative z-10">
@@ -65,9 +65,9 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Main Product Info */}
-          <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
               <Package size={28} />
             </div>
@@ -78,7 +78,7 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-2 text-slate-400 mb-3">
                 <Hash size={14} />
                 <span className="text-[9px] font-black uppercase tracking-widest">Cantidad</span>
@@ -86,7 +86,7 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
               <p className="text-2xl font-black text-slate-900 tracking-tight">{purchase.quantity} <span className="text-xs font-bold text-slate-400">uds</span></p>
             </div>
 
-            <div className="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-2 text-slate-400 mb-3">
                 <DollarSign size={14} />
                 <span className="text-[9px] font-black uppercase tracking-widest">P. Costo</span>
@@ -95,13 +95,13 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
             </div>
           </div>
 
-          <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-xl shadow-slate-900/20 relative overflow-hidden group">
+          <div className="p-6 bg-slate-900 rounded-3xl text-white shadow-xl shadow-slate-900/20 relative overflow-hidden group">
             <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="flex justify-between items-center mb-2 relative z-10">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inversión Total</span>
               <div className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-wider">Pagado</div>
             </div>
-            <p className="text-4xl font-black tracking-tighter text-white relative z-10">
+            <p className="text-3xl font-black tracking-tighter text-white relative z-10">
               ${purchase.total?.toLocaleString("es-CO")}
             </p>
           </div>
@@ -115,7 +115,7 @@ export const PurchaseDetailModal = ({ isOpen, onClose, purchase }: PurchaseDetai
         </div>
 
         {/* Footer */}
-        <div className="p-8 pt-0">
+        <div className="p-6 pt-0">
           <button 
             onClick={onClose}
             className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-[0.98] shadow-lg shadow-slate-900/10"

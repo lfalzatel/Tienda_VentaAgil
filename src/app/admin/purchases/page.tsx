@@ -129,18 +129,18 @@ export default function PurchasesPage() {
       
       <main className="flex-grow p-6 sm:p-10 overflow-y-auto custom-scrollbar max-w-7xl mx-auto w-full space-y-10 pb-20">
         {/* Page Header */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="h-16 w-16 bg-emerald-600 rounded-[2.2rem] flex items-center justify-center text-white shadow-xl shadow-emerald-600/10">
-              <Wallet size={28} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-600/10">
+              <Wallet size={22} />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tighter text-slate-900 leading-none">Compras</h1>
-              <p className="text-slate-500 font-medium text-sm mt-2">Dashboard de abastecimiento y gastos</p>
+              <h1 className="text-2xl font-black tracking-tighter text-slate-900 leading-none">Compras</h1>
+              <p className="text-slate-500 font-medium text-xs mt-0.5">Dashboard de abastecimiento y gastos</p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <DashboardControls 
               activeFilter={activeFilter}
               onFilterChange={(f) => {
@@ -153,9 +153,9 @@ export default function PurchasesPage() {
             />
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
-              className="group relative flex items-center gap-3 bg-slate-900 text-white px-8 py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/20"
+              className="group relative flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/20"
             >
-              <Plus size={18} />
+              <Plus size={16} />
               Registrar Compra
             </button>
           </div>

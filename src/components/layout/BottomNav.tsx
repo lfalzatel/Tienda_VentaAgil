@@ -28,8 +28,8 @@ export const BottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] w-full max-w-fit px-4">
-      <nav className="flex items-center gap-1 p-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl justify-center px-4">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] max-w-fit px-4">
+      <nav className="flex items-center gap-1 p-2 bg-white/95 border border-slate-200/60 rounded-[2rem] shadow-lg justify-center">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;
@@ -39,15 +39,15 @@ export const BottomNav = () => {
               key={item.path}
               href={item.path}
               className={cn(
-                "relative flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 min-w-[70px] group",
+                "relative flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 min-w-[70px] group pointer-events-auto cursor-pointer",
                 isActive 
-                  ? "text-emerald-400 font-black" 
-                  : "text-white/60 hover:text-white"
+                  ? "text-emerald-500 font-black" 
+                  : "text-slate-600 hover:text-slate-900"
               )}
             >
               <div className={cn(
                 "p-1.5 rounded-xl transition-all duration-500",
-                isActive ? "bg-emerald-500/20 scale-110" : "group-hover:bg-white/5"
+                isActive ? "bg-emerald-500/15 scale-110" : "group-hover:bg-slate-100/80"
               )}>
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
               </div>

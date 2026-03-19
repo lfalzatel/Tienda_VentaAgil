@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { collection, onSnapshot, query, orderBy, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { Header } from "@/components/layout/Header";
@@ -25,6 +25,9 @@ interface Sale {
   paymentMethod: string;
   createdAt: any;
   items: any[];
+  debtorId?: string;
+  customerName?: string;
+  debtorName?: string;
 }
 
 export default function ReportsPage() {
@@ -33,14 +36,38 @@ export default function ReportsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
+  const allDebtorsMap = useRef<Record<string, string>>({});
+
   useEffect(() => {
+    const unsubDebtors = onSnapshot(collection(db, "debtors"), (snap) => {
+      const debtorsMap: Record<string, string> = {};
+      snap.docs.forEach(doc => {
+        debtorsMap[doc.id] = doc.data().name || "Sin nombre";
+      });
+      allDebtorsMap.current = debtorsMap;
+    });
+
     const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
+    const unsubSales = onSnapshot(q, (snap) => {
       const salesData = snap.docs.map(d => ({ id: d.id, ...d.data() } as Sale));
-      setSales(salesData);
+      
+      const enrichedSales = salesData.map(sale => {
+         if (sale.paymentMethod === "Credit") {
+             const fallbackName = sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null;
+             const name = sale.customerName || fallbackName || "Cliente Desconocido";
+             return { ...sale, customerName: name, debtorName: name };
+         }
+         return sale;
+      });
+
+      setSales(enrichedSales);
       setLoading(false);
     });
-    return () => unsub();
+    
+    return () => {
+      unsubDebtors();
+      unsubSales();
+    };
   }, []);
 
   const filteredSales = useMemo(() => {

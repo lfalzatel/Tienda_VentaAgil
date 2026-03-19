@@ -165,22 +165,22 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
           </button>
         </div>
 
-        <div className="flex-grow overflow-y-auto custom-scrollbar p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
             {/* Left Column: Client Data */}
-            <div className="space-y-6">
-              <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-4">
+            <div className="space-y-4 sm:space-y-6">
+              <section className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-sm border border-slate-100 space-y-4">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-3">Perfil</h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nombre</label>
                     <div className="relative group">
-                      <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                      <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                       <input
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                         placeholder="Juan Pérez"
                       />
                     </div>
@@ -188,11 +188,11 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">WhatsApp</label>
                     <div className="relative group">
-                      <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                      <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                       <input
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                         placeholder="300 000 0000"
                       />
                     </div>
@@ -200,16 +200,16 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                 </div>
               </section>
 
-              <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-4">
+              <section className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-sm border border-slate-100 space-y-4">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-3">Ajuste Manual</h3>
                 <div className="space-y-2">
                   <div className="relative group">
-                    <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                    <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                     <input
                       type="number"
                       value={manualDebt || ""}
                       onChange={(e) => setManualDebt(Number(e.target.value))}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                       placeholder="Valor adicional..."
                     />
                   </div>
@@ -217,20 +217,20 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
               </section>
 
               {/* Total Card */}
-              <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-xl text-white">
-                <div className="flex justify-between items-center opacity-60 mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest">Resumen Total</span>
+              <div className="bg-slate-900 rounded-[2.5rem] p-4 sm:p-8 shadow-xl text-white">
+                <div className="flex justify-between items-center opacity-60 mb-3 sm:mb-4">
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Resumen Total</span>
                   <CreditCard size={18} />
                 </div>
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-end">
                   <div>
-                    <p className="text-3xl font-black tracking-tighter text-emerald-400">${totalDebt.toLocaleString("es-CO")}</p>
-                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">Saldo inicial a deber</p>
+                    <p className="text-2xl sm:text-3xl font-black tracking-tighter text-emerald-400">${totalDebt.toLocaleString("es-CO")}</p>
+                    <p className="text-[9px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">Saldo inicial a deber</p>
                   </div>
                   <button
                     onClick={handleSubmit}
                     disabled={loading || !formData.name}
-                    className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:scale-105 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-slate-900 rounded-2xl font-black text-xs sm:text-sm hover:scale-105 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                     Guardar
@@ -240,16 +240,16 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
             </div>
 
             {/* Right Column: Product Selector */}
-            <div className="space-y-6">
-              <section className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col h-full max-h-[500px]">
+            <div className="space-y-4 sm:space-y-6">
+              <section className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-sm border border-slate-100 flex flex-col h-full max-h-[350px] sm:max-h-[500px]">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-3 mb-4">Cargar Productos</h3>
                 
                 <div className="relative group mb-4">
-                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
                   <input
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="Escribe para buscar..."
                   />
                 </div>

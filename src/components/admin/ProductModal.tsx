@@ -127,17 +127,17 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
       <div className="relative w-full max-w-xl bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
         <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
           {/* Header */}
-          <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          <div className="p-6 pb-4 sm:p-8 sm:pb-6 bg-gradient-to-r from-emerald-500 to-cyan-600 flex justify-between items-center border-b-2 border-emerald-600">
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               {product ? "Editar Producto" : "Nuevo Producto"}
             </h2>
-            <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 rounded-2xl transition-all">
+            <button type="button" onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-2xl transition-all">
               <X size={24} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+          <div className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto custom-scrollbar">
             {/* Image Upload Area */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative h-32 w-32 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden group">
@@ -158,12 +158,12 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
               <div className="col-span-1 sm:col-span-2 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nombre</label>
                 <div className="relative">
-                  <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="Ej. Protector Solar"
                   />
                 </div>
@@ -173,7 +173,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoría</label>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-grow">
-                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <select
                       required
                       value={isNewCategory ? "NEW" : formData.category}
@@ -185,7 +185,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                           setFormData({ ...formData, category: e.target.value });
                         }
                       }}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold appearance-none cursor-pointer"
+                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold appearance-none cursor-pointer text-slate-900"
                     >
                       <option value="" disabled>Selecciona una categoría</option>
                       {categories.map(cat => (
@@ -202,7 +202,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                         required
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-sky-50 border-none rounded-2xl focus:ring-2 focus:ring-sky-500/10 transition-all text-sm font-bold placeholder:text-sky-300"
+                        className="w-full pl-12 pr-4 py-4 bg-sky-50 border border-sky-200 rounded-2xl focus:ring-2 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-sm font-bold text-sky-900 placeholder:text-sky-600"
                         placeholder="Nombre de la categoría..."
                       />
                     </div>
@@ -213,7 +213,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Precio Costo (COP)</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     required
                     type="number"
@@ -224,7 +224,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                       const price = markup > 0 ? cost * (1 + markup / 100) : formData.price;
                       setFormData({ ...formData, costPrice: cost, price: Math.round(price) });
                     }}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="0"
                   />
                 </div>
@@ -233,7 +233,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Margen / Ganancia (%)</label>
                 <div className="relative">
-                  <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="number"
                     value={formData.markup}
@@ -243,7 +243,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                       const price = cost > 0 ? cost * (1 + m / 100) : formData.price;
                       setFormData({ ...formData, markup: m, price: Math.round(price) });
                     }}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="0"
                   />
                 </div>
@@ -252,7 +252,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Precio Venta (COP)</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" size={18} />
                   <input
                     required
                     type="number"
@@ -263,7 +263,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                       const markup = cost > 0 ? ((p - cost) / cost) * 100 : 0;
                       setFormData({ ...formData, price: p, markup: Number(markup.toFixed(2)) });
                     }}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-900/[0.02] border border-slate-100 rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold text-emerald-600"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-emerald-300 rounded-2xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-sm font-bold text-emerald-700 placeholder:text-emerald-600"
                     placeholder="0"
                   />
                 </div>
@@ -278,7 +278,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="0"
                   />
                 </div>

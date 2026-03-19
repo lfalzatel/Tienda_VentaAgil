@@ -49,14 +49,12 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
   const [isCreatingClient, setIsCreatingClient] = useState(false);
 
   useEffect(() => {
-    if (paymentMethod === "Credit") {
-      const q = query(collection(db, "debtors"), orderBy("name"));
-      const unsub = onSnapshot(q, (snap) => {
-        setDebtors(snap.docs.map(d => ({ id: d.id, name: d.data().name })));
-      });
-      return unsub;
-    }
-  }, [paymentMethod]);
+    const q = query(collection(db, "debtors"), orderBy("name"));
+    const unsub = onSnapshot(q, (snap) => {
+      setDebtors(snap.docs.map(d => ({ id: d.id, name: d.data().name })));
+    });
+    return unsub;
+  }, []);
 
   if (!isOpen && !isSuccess) return null;
 
@@ -66,11 +64,14 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
       return;
     }
 
+    const debtor = debtors.find(d => d.id === selectedDebtorId);
+
     const success = await processSale({
       items,
       total: getTotal(),
       paymentMethod,
-      debtorId: paymentMethod === "Credit" ? selectedDebtorId : undefined
+      debtorId: selectedDebtorId || undefined,
+      customerName: debtor?.name
     });
 
     if (success) {
@@ -185,79 +186,77 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
                 </div>
               </div>
 
-              {/* Debtor Selection (Only if Credit) */}
-              {paymentMethod === "Credit" && (
-                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
-                  <div className="relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={16} />
-                    <input
-                      placeholder="Buscar cliente para crédito..."
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300"
-                      value={debtorSearch}
-                      onChange={(e) => setDebtorSearch(e.target.value)}
-                    />
-                    {!isAddingNewClient && (
-                      <button 
-                        onClick={() => setIsAddingNewClient(true)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                        title="Nuevo Cliente"
-                      >
-                        <UserPlus size={16} />
-                      </button>
-                    )}
-                  </div>
-
-                  {isAddingNewClient ? (
-                    <div className="p-5 bg-sky-50 rounded-3xl border border-sky-100 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest">Crear Nuevo Cliente</span>
-                        <button onClick={() => setIsAddingNewClient(false)} className="text-sky-400 hover:text-sky-600">
-                          <X size={14} />
-                        </button>
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          autoFocus
-                          placeholder="Nombre del cliente..."
-                          className="flex-grow px-4 py-3 bg-white border-2 border-transparent focus:border-sky-500 rounded-2xl text-sm font-bold focus:outline-none transition-all"
-                          value={newClientName}
-                          onChange={(e) => setNewClientName(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddNewClient()}
-                        />
-                        <button
-                          onClick={handleAddNewClient}
-                          disabled={isCreatingClient || !newClientName.trim()}
-                          className="bg-sky-600 text-white px-4 rounded-2xl hover:bg-sky-700 transition-all disabled:opacity-50 flex items-center justify-center p-3"
-                        >
-                          {isCreatingClient ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
-                      {filteredDebtors.map((d) => (
-                        <button
-                          key={d.id}
-                          onClick={() => setSelectedDebtorId(d.id)}
-                          className={cn(
-                            "w-full text-left px-5 py-3 rounded-xl text-xs font-bold transition-all",
-                            selectedDebtorId === d.id 
-                              ? "bg-slate-900 text-white shadow-md" 
-                              : "bg-white border border-slate-100 text-slate-600 hover:bg-slate-50"
-                          )}
-                        >
-                          {d.name}
-                        </button>
-                      ))}
-                      {filteredDebtors.length === 0 && (
-                        <p className="text-center py-4 text-xs font-black text-slate-300 uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-2xl">
-                          No hay clientes registrados
-                        </p>
-                      )}
-                    </div>
+              {/* Debtor Selection */}
+              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={16} />
+                  <input
+                    placeholder="Buscar cliente..."
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300"
+                    value={debtorSearch}
+                    onChange={(e) => setDebtorSearch(e.target.value)}
+                  />
+                  {!isAddingNewClient && (
+                    <button 
+                      onClick={() => setIsAddingNewClient(true)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                      title="Nuevo Cliente"
+                    >
+                      <UserPlus size={16} />
+                    </button>
                   )}
                 </div>
-              )}
+
+                {isAddingNewClient ? (
+                  <div className="p-5 bg-sky-50 rounded-3xl border border-sky-100 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest">Crear Nuevo Cliente</span>
+                      <button onClick={() => setIsAddingNewClient(false)} className="text-sky-400 hover:text-sky-600">
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        autoFocus
+                        placeholder="Nombre del cliente..."
+                        className="flex-grow px-4 py-3 bg-white border-2 border-transparent focus:border-sky-500 rounded-2xl text-sm font-bold focus:outline-none transition-all"
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddNewClient()}
+                      />
+                      <button
+                        onClick={handleAddNewClient}
+                        disabled={isCreatingClient || !newClientName.trim()}
+                        className="bg-sky-600 text-white px-4 rounded-2xl hover:bg-sky-700 transition-all disabled:opacity-50 flex items-center justify-center p-3"
+                      >
+                        {isCreatingClient ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
+                    {filteredDebtors.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => setSelectedDebtorId(d.id)}
+                        className={cn(
+                          "w-full text-left px-5 py-3 rounded-xl text-xs font-bold transition-all",
+                          selectedDebtorId === d.id 
+                            ? "bg-slate-900 text-white shadow-md" 
+                            : "bg-white border border-slate-100 text-slate-600 hover:bg-slate-50"
+                        )}
+                      >
+                        {d.name}
+                      </button>
+                    ))}
+                    {filteredDebtors.length === 0 && (
+                      <p className="text-center py-4 text-xs font-black text-slate-300 uppercase tracking-widest border-2 border-dashed border-slate-50 rounded-2xl">
+                        No hay clientes registrados
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Confirm Button */}
               <button

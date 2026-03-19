@@ -15,6 +15,7 @@ interface SaleData {
   items: any[];
   total: number;
   paymentMethod: string;
+  customerName?: string;
 }
 
 export const useSales = () => {
@@ -25,7 +26,7 @@ export const useSales = () => {
     setIsProcessing(true);
     try {
       await runTransaction(db, async (transaction) => {
-        // 1. PRE-LECTURAS: Obtener todos los documentos necesarios primero
+        // ... (pre-reads remain the same)
         
         // 1.1. Leer productos
         const productSnapshots = await Promise.all(
@@ -40,7 +41,7 @@ export const useSales = () => {
           if (!debtorDoc.exists()) throw new Error("Cliente no encontrado.");
         }
 
-        // Validaciones de stock (basadas en las lecturas previas)
+        // ... (validations remain the same)
         productSnapshots.forEach((productDoc, index) => {
           const item = data.items[index];
           if (!productDoc.exists()) {
@@ -52,7 +53,7 @@ export const useSales = () => {
           }
         });
 
-        // 2. ESCRITURAS: Realizar todas las actualizaciones después de las lecturas
+        // 2. ESCRITURAS
         
         // 2.1. Actualizar stock
         productSnapshots.forEach((productDoc, index) => {
@@ -77,6 +78,7 @@ export const useSales = () => {
           total: data.total,
           paymentMethod: data.paymentMethod,
           debtorId: data.debtorId || null,
+          customerName: data.customerName || (debtorDoc ? debtorDoc.data().name : null),
           createdBy: user?.uid || "anonymous",
           createdAt: serverTimestamp(),
           status: "completed"

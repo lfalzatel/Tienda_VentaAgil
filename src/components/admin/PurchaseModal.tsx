@@ -158,42 +158,42 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
       
       <div className={cn(
-        "relative w-full h-full md:h-auto bg-white rounded-2xl md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 flex flex-col max-h-[95vh] md:max-h-[90vh] transition-all duration-500",
-        step === 1 ? "max-w-xl" : "max-w-4xl"
+        "relative w-full h-full md:h-auto bg-white rounded-2xl md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 flex flex-col max-h-[95vh] md:max-h-[85vh] transition-all duration-500",
+        step === 1 ? "max-w-xl" : "max-w-3xl"
       )}>
         <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
           {/* Header */}
-          <div className="p-4 md:p-8 md:pb-4 flex justify-between items-center border-b border-slate-50">
+          <div className="p-3 md:p-6 md:pb-3 bg-gradient-to-r from-blue-50 to-cyan-50 flex justify-between items-center border-b-2 border-blue-200">
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {step === 1 ? "Seleccionar Productos" : "Editar Detalles de Compra"}
+              <h2 className="text-xl md:text-2xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-tight">
+                {step === 1 ? "Seleccionar Productos" : "Editar Detalles"}
               </h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                {selectedProductIds.length} productos seleccionados
+              <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                {selectedProductIds.length} seleccionados
               </p>
             </div>
-            <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 rounded-2xl transition-all">
-              <X size={24} />
+            <button type="button" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-900 rounded-lg transition-all">
+              <X size={20} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-4 md:p-8 space-y-6 overflow-y-auto custom-scrollbar flex-grow min-h-0">
+          <div className="p-3 md:p-6 space-y-3 overflow-y-auto custom-scrollbar flex-grow min-h-0">
             {step === 1 ? (
               /* Selection View */
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                   <input
                     autoFocus
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold"
-                    placeholder="Buscar para agregar..."
+                    className="w-full pl-10 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900/5 transition-all text-xs font-bold"
+                    placeholder="Buscar..."
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 pr-2">
+                <div className="grid grid-cols-1 gap-1.5 pr-2">
                   {filteredProducts.map(p => {
                     const isSelected = selectedProductIds.includes(p.id);
                     return (
@@ -202,36 +202,36 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                         type="button"
                         onClick={() => toggleProductSelection(p)}
                         className={cn(
-                          "w-full flex items-center justify-between p-4 rounded-2xl transition-all group border",
+                          "w-full flex items-center justify-between p-2.5 rounded-lg transition-all group border text-xs",
                           isSelected 
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/10 scale-[0.98]" 
+                            ? "bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10 scale-[0.99]" 
                             : "bg-white border-transparent hover:border-slate-100 hover:bg-slate-50"
                         )}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 min-w-0">
                           <div className={cn(
-                            "h-10 w-10 rounded-xl flex items-center justify-center transition-colors",
+                            "h-8 w-8 rounded-lg flex items-center justify-center transition-colors flex-shrink-0",
                             isSelected ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-600"
                           )}>
-                            <Package size={20} />
+                            <Package size={16} />
                           </div>
-                          <div className="text-left">
-                            <div className="flex items-center gap-2">
-                              <p className={cn("font-black text-sm", isSelected ? "text-white" : "text-slate-900")}>
+                          <div className="text-left min-w-0">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <p className={cn("font-black", isSelected ? "text-white" : "text-slate-900")}>
                                 {p.name}
                               </p>
                               {(p.stock || 0) <= 5 && !isSelected && (
-                                <span className="text-[8px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-md uppercase tracking-tighter shadow-sm shadow-orange-500/20">
+                                <span className="text-[7px] font-black bg-orange-500 text-white px-1 rounded-sm uppercase">
                                   CRÍTICO
                                 </span>
                               )}
                             </div>
-                            <p className={cn("text-[10px] font-bold uppercase tracking-widest", isSelected ? "text-white/60" : "text-slate-400")}>
-                              Stock: {p.stock} | Costo actual: ${p.costPrice?.toLocaleString("es-CO")}
+                            <p className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "text-white/60" : "text-slate-400")}>
+                              Stock: {p.stock} | ${p.costPrice?.toLocaleString("es-CO")}
                             </p>
                           </div>
                         </div>
-                        {isSelected ? <Save size={16} /> : <Plus size={16} className="text-slate-300 group-hover:text-slate-900" />}
+                        {isSelected ? <Save size={14} /> : <Plus size={14} className="text-slate-300 group-hover:text-slate-900" />}
                       </button>
                     );
                   })}
@@ -239,34 +239,34 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
               </div>
             ) : (
               /* Batch Edit View */
-              <div className="space-y-6">
-                <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="space-y-3">
                   {selectedProductIds.map(id => {
                     const product = products.find(p => p.id === id);
                     const data = batchData[id];
                     if (!product || !data) return null;
 
                     return (
-                      <div key={id} className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
-                              <Package size={20} />
+                      <div key={id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <Package size={16} />
                             </div>
                             <div>
-                              <p className="font-black text-slate-900 text-base">{product.name}</p>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stock: {product.stock}</p>
+                              <p className="font-black text-slate-900 text-sm">{product.name}</p>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Stock: {product.stock}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtotal</p>
-                             <p className="text-sm font-black text-slate-900">${(data.quantity * data.costPrice).toLocaleString("es-CO")}</p>
+                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Subtotal</p>
+                             <p className="text-xs font-black text-slate-900">${(data.quantity * data.costPrice).toLocaleString("es-CO")}</p>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Cant.</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest px-1">Cant.</label>
                             <input
                               type="number"
                               min="1"
@@ -275,12 +275,12 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                                 ...batchData, 
                                 [id]: { ...data, quantity: Number(e.target.value) } 
                               })}
-                              className="w-full px-4 py-3 bg-white border-none rounded-xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold shadow-sm"
+                              className="w-full px-2 py-2 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-xs font-bold text-slate-900"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Costo</label>
+                          <div className="space-y-1">
+                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest px-1">Costo</label>
                             <input
                               type="number"
                               value={data.costPrice}
@@ -292,12 +292,12 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                                   [id]: { ...data, costPrice: cost, price: Math.round(price) } 
                                 });
                               }}
-                              className="w-full px-4 py-3 bg-white border-none rounded-xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold shadow-sm"
+                              className="w-full px-2 py-2 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-xs font-bold text-slate-900"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Margen (%)</label>
+                          <div className="space-y-1">
+                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest px-1">Margen %</label>
                             <input
                               type="number"
                               value={data.markup}
@@ -309,12 +309,12 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                                   [id]: { ...data, markup, price: Math.round(price) } 
                                 });
                               }}
-                              className="w-full px-4 py-3 bg-white border-none rounded-xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold shadow-sm"
+                              className="w-full px-2 py-2 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-xs font-bold text-slate-900"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Venta</label>
+                          <div className="space-y-1">
+                            <label className="text-[7px] font-black text-slate-400 uppercase tracking-widest px-1">Venta</label>
                             <input
                               type="number"
                               value={data.price}
@@ -326,7 +326,7 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                                   [id]: { ...data, price, markup: Number(markup.toFixed(2)) } 
                                 });
                               }}
-                              className="w-full px-4 py-3 bg-white border-none rounded-xl focus:ring-2 focus:ring-slate-900/5 transition-all text-sm font-bold shadow-sm"
+                              className="w-full px-2 py-2 bg-white border border-slate-200 rounded-lg focus:ring-1 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-xs font-bold text-slate-900"
                             />
                           </div>
                         </div>
@@ -339,42 +339,42 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
           </div>
 
           {/* Footer */}
-          <div className="p-4 md:p-8 md:pt-4 border-t border-slate-50 bg-slate-50/30 flex flex-col gap-4">
+          <div className="p-3 md:p-6 md:pt-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2">
             {step === 2 && (
-              <div className="flex justify-between items-center px-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Inversión Total por Lote</span>
-                <span className="text-xl font-black text-slate-900">${totalInvestment.toLocaleString("es-CO")}</span>
+              <div className="flex justify-between items-center px-2">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inversión Total</span>
+                <span className="text-lg font-black text-slate-900">${totalInvestment.toLocaleString("es-CO")}</span>
               </div>
             )}
             
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               {step === 1 ? (
                 <button
                   disabled={selectedProductIds.length === 0}
                   type="button"
                   onClick={() => setStep(2)}
-                  className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-slate-900/10"
+                  className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-slate-900/10"
                 >
                   Continuar ({selectedProductIds.length})
-                  <ArrowRight size={18} />
+                  <ArrowRight size={16} />
                 </button>
               ) : (
                 <>
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-shrink-0 px-8 bg-white border border-slate-200 text-slate-600 py-4 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
+                    className="flex-shrink-0 px-6 bg-white border border-slate-200 text-slate-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
                   >
                     Volver
                   </button>
                   <button
                     disabled={loading}
                     type="submit"
-                    className="flex-grow flex items-center justify-center gap-3 bg-emerald-600 text-white py-4 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-emerald-600/10"
+                    className="flex-grow flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-emerald-600/10"
                   >
-                    {loading ? <Loader2 className="animate-spin" size={20} /> : (
+                    {loading ? <Loader2 className="animate-spin" size={16} /> : (
                       <>
-                        <Save size={18} />
+                        <Save size={16} />
                         Confirmar
                       </>
                     )}

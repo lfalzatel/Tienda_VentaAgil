@@ -73,10 +73,10 @@ export default function InventoryPage() {
       
       <main className="flex-grow p-6 sm:p-10 overflow-hidden flex flex-col max-w-7xl mx-auto w-full">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-900">Inventario</h1>
-            <p className="text-slate-500 font-medium text-sm mt-1">Gestiona tus productos y niveles de stock</p>
+            <h1 className="text-2xl font-black tracking-tighter text-slate-900">Inventario</h1>
+            <p className="text-slate-500 font-medium text-xs mt-0.5">Gestiona tus productos y niveles de stock</p>
           </div>
           
           <button
@@ -84,9 +84,9 @@ export default function InventoryPage() {
               setEditingProduct(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Nuevo Producto
           </button>
         </div>

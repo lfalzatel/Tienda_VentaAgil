@@ -1,0 +1,36 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo degradado -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0EA5E9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Círculo de fondo -->
+  <circle cx="100" cy="100" r="100" fill="url(#bgGradient)"/>
+  
+  <!-- Rectángulo para representar caja registradora/tienda -->
+  <rect x="40" y="50" width="120" height="100" rx="12" fill="white" opacity="0.95" />
+  
+  <!-- Líneas de producto (estante) -->
+  <line x1="50" y1="75" x2="150" y2="75" stroke="url(#accentGradient)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="100" x2="150" y2="100" stroke="#06B6D4" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="125" x2="150" y2="125" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Símbolo de pesos (dinero) -->
+  <circle cx="100" cy="100" r="28" fill="none" stroke="url(#accentGradient)" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Moneda/dinero -->
+  <g transform="translate(140, 140)">
+    <circle cx="0" cy="0" r="15" fill="#10B981" opacity="0.9"/>
+    <text x="0" y="6" font-size="16" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial">$</text>
+  </g>
+  
+  <!-- Checkmark de validación -->
+  <path d="M 65 95 L 75 105 L 95 85" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+</svg>
