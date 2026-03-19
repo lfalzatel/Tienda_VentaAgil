@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -20,12 +20,15 @@ export const metadata: Metadata = {
   title: "VentaÁgil | Sistema de Ventas",
   description: "Sistema de ventas ágil y moderno para tu negocio",
   manifest: "/manifest.json",
-  themeColor: "#10b981",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "VentaÁgil",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({
