@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  Home,
   ShoppingCart,
   LayoutDashboard,
   Users,
   Package,
-  Wallet
+  Wallet,
+  Home,
+  History,
+  QrCode
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -28,7 +30,9 @@ export const BottomNav = () => {
   ];
 
   const clientNavItems = [
-    { label: "Mi Cuenta", path: "/client/dashboard", icon: Users },
+    { label: "Resumen", path: "/client/dashboard", icon: Home },
+    { label: "Historial", path: "/client/history", icon: History },
+    { label: "Mi Código", path: "/client/qr", icon: QrCode },
   ];
 
   const navItems = user.role === "client" ? clientNavItems : adminNavItems;

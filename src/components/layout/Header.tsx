@@ -23,7 +23,6 @@ interface HeaderProps {
 }
 
 export const Header = ({ title }: HeaderProps) => {
-  const [isOnline, setIsOnline] = useState(true);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user } = useAuthStore();
   const pathname = usePathname();
@@ -39,20 +38,7 @@ export const Header = ({ title }: HeaderProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
 
-    setIsOnline(navigator.onLine);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
 
   const navItems = [
     { label: "Vender", href: "/pos", icon: <MonitorSmartphone size={18} /> },
@@ -94,25 +80,7 @@ export const Header = ({ title }: HeaderProps) => {
 
         {/* Right: Actions & User */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Connection Indicator */}
-          <div className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-500 border",
-            isOnline 
-              ? "bg-emerald-900/30 text-emerald-400 border-emerald-500/20" 
-              : "bg-amber-900/30 text-amber-500 border-amber-500/20 animate-pulse"
-          )}>
-            {isOnline ? (
-              <>
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                <span className="hidden xs:block">Online</span>
-              </>
-            ) : (
-              <>
-                <div className="h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div>
-                <span className="hidden xs:block">Offline</span>
-              </>
-            )}
-          </div>
+
 
           {/* Icono de Campana */}
           <div className="relative" ref={notificationsRef}>

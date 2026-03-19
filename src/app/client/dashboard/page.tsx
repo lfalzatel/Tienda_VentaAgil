@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { db } from "@/lib/firebase/config";
-import { collection, query, where, getDocs, doc, setDoc, updateDoc, onSnapshot, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, setDoc, updateDoc, onSnapshot, orderBy, serverTimestamp, getDoc } from "firebase/firestore";
 import { Loader2, CreditCard, Phone, ArrowUpRight, TrendingDown, Calendar, Wallet } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { SaleDetailModal } from "@/components/admin/SaleDetailModal";
 import { cn } from "@/lib/utils";
 
 interface Transaction {
@@ -14,6 +15,7 @@ interface Transaction {
   amount: number;
   date: any;
   description?: string;
+  saleId?: string;
 }
 
 interface DebtorData {
@@ -34,6 +36,11 @@ export default function ClientDashboardPage() {
   // Dashboard Data
   const [debtor, setDebtor] = useState<DebtorData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  // Sale Detail Modal State
+  const [selectedSale, setSelectedSale] = useState<any | null>(null);
+  const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
+  const [loadingSaleId, setLoadingSaleId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -123,6 +130,27 @@ export default function ClientDashboardPage() {
       alert("Hubo un error al guardar tu perfil.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleTransactionClick = async (tr: Transaction) => {
+    if (tr.type === "sale" && tr.saleId) {
+      setLoadingSaleId(tr.id);
+      try {
+        const saleDoc = await getDoc(doc(db, "sales", tr.saleId));
+        if (saleDoc.exists()) {
+          setSelectedSale({ id: saleDoc.id, ...saleDoc.data() });
+          setIsSaleModalOpen(true);
+        } else {
+          alert("Detalles de esta compra no disponibles.");
+        }
+      } catch (error) {
+        console.error("Error fetching sale detail:", error);
+      } finally {
+        setLoadingSaleId(null);
+      }
+    } else if (tr.type === "payment") {
+       // Podríamos mostrar algo para abonos después
     }
   };
 
@@ -238,13 +266,26 @@ export default function ClientDashboardPage() {
               </div>
             ) : (
               transactions.map(tr => (
-                <div key={tr.id} className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                <div 
+                  key={tr.id} 
+                  onClick={() => handleTransactionClick(tr)}
+                  className={cn(
+                    "flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group",
+                    (tr.type === "sale" && tr.saleId) ? "cursor-pointer active:scale-[0.98]" : ""
+                  )}
+                >
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
                       tr.type === "sale" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
                     )}>
-                      {tr.type === "sale" ? <ArrowUpRight size={20} /> : <TrendingDown size={20} />}
+                      {loadingSaleId === tr.id ? (
+                        <Loader2 size={20} className="animate-spin" />
+                      ) : tr.type === "sale" ? (
+                        <ArrowUpRight size={20} />
+                      ) : (
+                        <TrendingDown size={20} />
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-black text-slate-900">
@@ -273,6 +314,15 @@ export default function ClientDashboardPage() {
           </div>
         </div>
       </main>
+
+      <SaleDetailModal 
+        isOpen={isSaleModalOpen}
+        onClose={() => {
+          setIsSaleModalOpen(false);
+          setSelectedSale(null);
+        }}
+        sale={selectedSale}
+      />
     </div>
   );
 }
