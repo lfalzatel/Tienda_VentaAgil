@@ -119,7 +119,8 @@ export default function ClientDashboardPage() {
               amount: data.amount,
               date: data.date,
               saleId: data.saleId,
-              description: data.description
+              description: data.description,
+              paymentMethod: data.type === "sale" ? "credit" : undefined
             };
           });
           updateTransactionsState();
