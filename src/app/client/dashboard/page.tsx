@@ -107,10 +107,14 @@ export default function ClientDashboardPage() {
       }
 
       // 2. Asociar la cédula al perfil de Auth
-      await updateDoc(doc(db, "users", user.uid), {
+      // Usamos setDoc con { merge: true } porque si es su primer login con Google,
+      // el documento en la colección 'users' podría no existir aún.
+      await setDoc(doc(db, "users", user.uid), {
         cedula: cedulaInput,
-        phone: phoneInput || null
-      });
+        phone: phoneInput || null,
+        email: user.email,
+        role: "client"
+      }, { merge: true });
 
       // Actualizar estado local
       setUser({ ...user, cedula: cedulaInput });
@@ -208,7 +212,7 @@ export default function ClientDashboardPage() {
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-2">Hola, {user.name?.split(' ')[0]}</p>
               <h2 className="text-4xl sm:text-5xl font-black tracking-tighter">
-                ${debtor?.totalDebt.toLocaleString("es-CO") || 0}
+                ${(debtor?.totalDebt || 0).toLocaleString("es-CO")}
               </h2>
               <p className="text-xs font-medium text-slate-400 mt-2">Saldo total pendiente a la fecha</p>
             </div>
