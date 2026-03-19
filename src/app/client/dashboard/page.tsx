@@ -16,6 +16,7 @@ interface Transaction {
   date: any;
   description?: string;
   saleId?: string;
+  paymentMethod?: string;
 }
 
 interface DebtorData {
@@ -97,7 +98,8 @@ export default function ClientDashboardPage() {
               type: "sale" as const,
               amount: data.total,
               date: data.createdAt,
-              saleId: doc.id
+              saleId: doc.id,
+              paymentMethod: data.paymentMethod
             };
           });
           updateTransactionsState();
@@ -355,16 +357,28 @@ export default function ClientDashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end">
                     <p className={cn(
-                      "text-lg sm:text-xl font-black tracking-tighter",
-                      tr.type === "sale" ? "text-slate-900" : "text-emerald-600"
+                      "text-lg sm:text-xl font-black tracking-tighter leading-none",
+                      tr.type === "sale" ? "text-red-500" : "text-emerald-500"
                     )}>
                       {tr.type === "sale" ? "+" : "-"}${tr.amount.toLocaleString("es-CO")}
                     </p>
-                    {tr.description && (
-                       <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate">{tr.description}</p>
-                    )}
+                    <div className="mt-1.5 flex flex-col items-end">
+                      <span className={cn(
+                        "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                        tr.type === "sale" 
+                          ? (tr.paymentMethod === 'credit' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100')
+                          : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                      )}>
+                        {tr.type === "sale" 
+                          ? (tr.paymentMethod === 'credit' ? 'Compra a Crédito' : 'Compra al Contado') 
+                          : 'Abono a Deuda'}
+                      </span>
+                      {tr.description && (
+                         <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate mt-1">{tr.description}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))
