@@ -23,7 +23,8 @@ export const useAuth = () => {
         // Obtener rol (puedes optar por no bloquear aquí también si prefieres velocidad extrema)
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         const userData = userDoc.data();
-        const role = userData?.role || "cashier";
+        const role = userData?.role || "client";
+        const cedula = userData?.cedula || null;
 
         setUser({
           uid: firebaseUser.uid,
@@ -31,15 +32,17 @@ export const useAuth = () => {
           role: role,
           name: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
+          cedula: cedula,
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
-          role: "cashier",
+          role: "client",
           name: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
+          cedula: null,
         });
       }
 

@@ -3,9 +3,10 @@ import { create } from "zustand";
 interface User {
   uid: string;
   email: string | null;
-  role: "admin" | "cashier";
+  role: "admin" | "cashier" | "client";
   name?: string | null;
   photoURL?: string | null;
+  cedula?: string | null;
 }
 
 interface AuthStore {

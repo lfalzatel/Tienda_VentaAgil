@@ -40,6 +40,8 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    cedula: "",
+    email: "",
   });
   const [manualDebt, setManualDebt] = useState<number>(0);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -101,6 +103,8 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
       batch.set(debtorRef, {
         name: formData.name,
         phone: formData.phone,
+        cedula: formData.cedula,
+        email: formData.email,
         totalDebt: totalDebt,
         createdAt: new Date().toISOString(),
       });
@@ -125,7 +129,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
       await batch.commit();
       onClose();
       // Reset form
-      setFormData({ name: "", phone: "" });
+      setFormData({ name: "", phone: "", cedula: "", email: "" });
       setCart([]);
       setManualDebt(0);
     } catch (error) {
@@ -152,14 +156,15 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
       
       <div className="relative w-full max-w-4xl bg-[#f8fafc] rounded-[3rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="p-8 flex justify-between items-center bg-white border-b border-slate-100">
+        <div className="p-6 pb-4 sm:p-8 sm:pb-6 bg-gradient-to-r from-emerald-500 to-cyan-600 flex justify-between items-center border-b-2 border-emerald-600">
           <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Nuevo Cliente</h2>
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Registro y Deuda Inicial</p>
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Nuevo Cliente</h2>
+            <p className="text-emerald-100/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-1">Registro y Deuda Inicial</p>
           </div>
           <button 
+            type="button"
             onClick={onClose}
-            className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-2xl transition-all"
+            className="p-2 text-white/70 hover:text-white rounded-2xl transition-all"
           >
             <X size={24} />
           </button>
@@ -194,6 +199,31 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                         placeholder="300 000 0000"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cédula / NIT</label>
+                    <div className="relative group">
+                      <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                      <input
+                        value={formData.cedula}
+                        onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
+                        placeholder="1111222333"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Correo Electrónico</label>
+                    <div className="relative group">
+                      <Package size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
+                        placeholder="usuario@correo.com"
                       />
                     </div>
                   </div>

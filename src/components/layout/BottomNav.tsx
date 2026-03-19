@@ -19,13 +19,19 @@ export const BottomNav = () => {
 
   if (!user) return null;
 
-  const navItems = [
+  const adminNavItems = [
     { label: "Vender", path: "/pos", icon: ShoppingCart },
     { label: "Inventario", path: "/admin/inventory", icon: Package },
     { label: "Clientes", path: "/admin/clients", icon: Users },
     { label: "Compras", path: "/admin/purchases", icon: Wallet },
     { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   ];
+
+  const clientNavItems = [
+    { label: "Mi Cuenta", path: "/client/dashboard", icon: Users },
+  ];
+
+  const navItems = user.role === "client" ? clientNavItems : adminNavItems;
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] max-w-fit px-4">

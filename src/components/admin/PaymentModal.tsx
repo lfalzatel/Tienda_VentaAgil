@@ -74,18 +74,19 @@ export const PaymentModal = ({ isOpen, onClose, debtorId, debtorName }: PaymentM
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
       
       <div className="relative w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
-          <div className="flex justify-between items-center">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
+          {/* Header */}
+          <div className="p-6 pb-4 sm:p-8 sm:pb-6 bg-gradient-to-r from-emerald-500 to-cyan-600 flex justify-between items-center border-b-2 border-emerald-600">
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Registrar Abono</h2>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{debtorName}</p>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Registrar Abono</h2>
+              <p className="text-emerald-100/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest mt-1">{debtorName}</p>
             </div>
-            <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 rounded-2xl transition-all">
+            <button type="button" onClick={onClose} className="p-2 text-white/70 hover:text-white rounded-2xl transition-all">
               <X size={24} />
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="p-4 sm:p-8 space-y-6 overflow-y-auto custom-scrollbar">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Monto del Abono</label>
               <div className="relative group">
@@ -95,7 +96,7 @@ export const PaymentModal = ({ isOpen, onClose, debtorId, debtorName }: PaymentM
                   type="number"
                   value={amount || ""}
                   onChange={(e) => setAmount(Number(e.target.value))}
-                  className="w-full pl-14 pr-6 py-6 bg-slate-50 border-none rounded-[2rem] focus:ring-4 focus:ring-emerald-500/10 transition-all text-2xl font-black tracking-tighter"
+                  className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-600 transition-all text-2xl font-black tracking-tighter"
                   placeholder="0"
                 />
               </div>
@@ -141,14 +142,23 @@ export const PaymentModal = ({ isOpen, onClose, debtorId, debtorName }: PaymentM
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-emerald-600 text-white rounded-[2rem] font-black text-sm shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-3 transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-            Confirmar Abono
-          </button>
+          <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-grow py-4 bg-white text-slate-500 font-bold rounded-2xl border border-slate-200 hover:bg-slate-100 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-grow py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+              Confirmar Abono
+            </button>
+          </div>
         </form>
       </div>
     </div>

@@ -19,11 +19,13 @@ import {
   TrendingDown,
   ArrowUpRight,
   MessageSquare,
-  Download
+  Download,
+  Edit2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { PaymentModal } from "@/components/admin/PaymentModal";
+import { EditClientModal } from "@/components/admin/EditClientModal";
 
 interface Transaction {
   id: string;
@@ -38,6 +40,8 @@ interface Client {
   id: string;
   name: string;
   phone?: string;
+  cedula?: string;
+  email?: string;
   totalDebt: number;
 }
 
@@ -46,6 +50,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const [client, setClient] = useState<Client | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,10 +96,10 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   );
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc] pb-24">
       <Header />
       
-      <main className="flex-grow p-6 sm:p-10 overflow-hidden flex flex-col max-w-6xl mx-auto w-full pb-32">
+      <main className="flex-grow p-6 sm:p-10 flex flex-col max-w-6xl mx-auto w-full">
         {/* Detail Header */}
         <div className="flex flex-col md:flex-row gap-8 mb-10 items-start md:items-center">
             <Link 
@@ -105,8 +110,15 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
             </Link>
 
             <div className="flex-grow">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tighter">{client.name}</h1>
+                <button 
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="p-2 text-slate-400 hover:text-emerald-600 bg-white hover:bg-emerald-50 rounded-xl transition-colors shadow-sm border border-slate-100"
+                  title="Editar Cliente"
+                >
+                  <Edit2 size={16} />
+                </button>
                 {client.totalDebt > 0 ? (
                   <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-red-100">
                     Debe ${client.totalDebt.toLocaleString("es-CO")}
@@ -117,7 +129,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                   </span>
                 )}
               </div>
-              <div className="flex gap-4 mt-2">
+              <div className="flex flex-wrap gap-4 mt-2">
                 {client.phone && (
                    <a 
                     href={`https://wa.me/${client.phone.replace(/ /g, "")}`} 
@@ -127,6 +139,16 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                      <MessageSquare size={14} />
                      {client.phone}
                    </a>
+                )}
+                {client.cedula && (
+                   <span className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                     <span className="font-black">CC:</span> {client.cedula}
+                   </span>
+                )}
+                {client.email && (
+                   <span className="flex items-center gap-2 text-xs font-bold text-slate-400" title="Correo Electrónico">
+                     {client.email}
+                   </span>
                 )}
                 <span className="flex items-center gap-2 text-xs font-bold text-slate-400">
                   <Plus size={14} />
@@ -146,21 +168,21 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Content grid */}
-        <div className="flex-grow flex flex-col overflow-hidden bg-white rounded-[3rem] border border-slate-100 shadow-sm">
-           <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+        <div className="flex flex-col bg-white rounded-[3rem] border border-slate-100 shadow-sm">
+           <div className="p-6 sm:p-8 bg-gradient-to-r from-emerald-500 to-cyan-600 flex justify-between items-center border-b-2 border-emerald-600 rounded-t-[3rem]">
              <div className="flex items-center gap-3">
-               <div className="p-3 bg-slate-100 rounded-xl text-slate-900">
+               <div className="p-3 bg-white/20 rounded-xl text-white backdrop-blur-sm">
                  <History size={20} />
                </div>
-               <h2 className="text-lg font-black text-slate-900 tracking-tight">Historial de Transacciones</h2>
+               <h2 className="text-lg font-black text-white tracking-tight">Historial de Transacciones</h2>
              </div>
-             <button className="flex items-center gap-2 text-[10px] font-black text-slate-400 bg-slate-50 px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-slate-100 transition-colors">
+             <button className="flex items-center gap-2 text-[10px] font-black text-emerald-900 bg-white px-4 py-2 rounded-xl uppercase tracking-widest hover:bg-emerald-50 transition-colors shadow-sm">
                <Download size={14} />
-               Exportar Resumen
+               Exportar
              </button>
            </div>
 
-           <div className="flex-grow overflow-y-auto custom-scrollbar p-6">
+           <div className="p-6">
               <div className="space-y-3">
                 {transactions.length === 0 ? (
                   <div className="py-20 text-center">
@@ -215,6 +237,12 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         onClose={() => setIsPaymentModalOpen(false)} 
         debtorId={resolvedParams.id}
         debtorName={client.name}
+      />
+      
+      <EditClientModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        client={client}
       />
     </div>
   );
