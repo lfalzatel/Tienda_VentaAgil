@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface User {
   uid: string;
   email: string | null;
-  role: "admin" | "cashier" | "client";
+  role: "admin" | "cashier" | "client" | "propietario";
   name?: string | null;
   photoURL?: string | null;
   cedula?: string | null;

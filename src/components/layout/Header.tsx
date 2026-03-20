@@ -47,7 +47,7 @@ export const Header = ({ title }: HeaderProps) => {
     { label: "Dashboard", href: "/admin/dashboard", icon: <LayoutDashboard size={18} />, adminOnly: true },
   ];
 
-  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === "admin");
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === "admin" || user?.role === "propietario");
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#0a1914] backdrop-blur-xl border-b border-emerald-900/50 px-6 py-3 shadow-lg shadow-emerald-900/20">

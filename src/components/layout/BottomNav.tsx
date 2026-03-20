@@ -41,7 +41,7 @@ export const BottomNav = () => {
 
   return (
     <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[60] w-[calc(100vw-24px)] max-w-sm">
-      <nav className="flex items-end justify-around px-1 py-2 bg-white/90 backdrop-blur-2xl border border-emerald-100 rounded-[2rem] shadow-2xl shadow-emerald-900/10">
+      <nav className="flex items-end justify-around px-1 py-2 bg-white/50 backdrop-blur-sm border border-emerald-100 rounded-[2rem] shadow-2xl shadow-emerald-900/10">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;
@@ -68,7 +68,7 @@ export const BottomNav = () => {
                   strokeWidth={isActive ? 2.5 : 2}
                   className={cn(
                     "transition-colors duration-300",
-                    isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-600"
+                    isActive ? "text-white" : "text-emerald-700/40 group-hover:text-emerald-500"
                   )}
                 />
               </div>
@@ -77,7 +77,7 @@ export const BottomNav = () => {
               <span
                 className={cn(
                   "text-[8px] font-black uppercase tracking-wider transition-all duration-300 leading-none mt-0.5 truncate max-w-full px-0.5",
-                  isActive ? "text-emerald-600 opacity-100" : "text-slate-400 opacity-70 group-hover:opacity-100 group-hover:text-emerald-600"
+                  isActive ? "text-emerald-500 opacity-100" : "text-emerald-700/40 group-hover:opacity-100 group-hover:text-emerald-500"
                 )}
               >
                 {item.label}

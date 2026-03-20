@@ -33,12 +33,20 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Sincronizar sesión con el servidor ANTES de navegar para evitar el redirect del middleware
+      const idToken = await userCredential.user.getIdToken();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
       router.push("/pos");
     } catch (err: any) {
       console.error(err);
       setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
-    } finally {
       setLoading(false);
     }
   };
@@ -47,14 +55,22 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      
+      // Sincronizar sesión con el servidor ANTES de navegar
+      const idToken = await result.user.getIdToken();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
       router.push("/pos");
     } catch (err: any) {
       console.error(err);
       if (err.code !== "auth/popup-closed-by-user") {
         setError("Error al iniciar sesión con redes sociales.");
       }
-    } finally {
       setLoading(false);
     }
   };

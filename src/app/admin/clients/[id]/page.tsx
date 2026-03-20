@@ -20,12 +20,14 @@ import {
   ArrowUpRight,
   MessageSquare,
   Download,
-  Edit2
+  Edit2,
+  ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { PaymentModal } from "@/components/admin/PaymentModal";
 import { EditClientModal } from "@/components/admin/EditClientModal";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Transaction {
   id: string;
@@ -43,10 +45,12 @@ interface Client {
   cedula?: string;
   email?: string;
   totalDebt: number;
+  role?: "admin" | "propietario" | "client";
 }
 
 export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
+  const { user: currentUser } = useAuthStore();
   const [client, setClient] = useState<Client | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -61,6 +65,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         setClient({ id: docSnap.id, ...(docSnap.data() as Omit<Client, "id">) });
       }
       setLoading(false);
+    }, (error) => {
+      if (error.code === "permission-denied") return;
+      console.error("Error in client listener:", error);
     });
 
     // Escuchar transacciones
@@ -77,6 +84,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         ...(doc.data() as Omit<Transaction, "id">),
       }));
       setTransactions(docs);
+    }, (error) => {
+      if (error.code === "permission-denied") return;
+      console.error("Error in trans listener:", error);
     });
 
     return () => {
@@ -86,12 +96,32 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   }, [resolvedParams.id]);
 
   if (loading) return null;
-  if (!client) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <p className="font-black text-slate-900">Cliente no encontrado</p>
-        <Link href="/admin/clients" className="text-sky-600 font-bold text-sm hover:underline">Volver a Clientes</Link>
-      </div>
+
+  const isRestricted = currentUser?.role === "propietario" && client?.role === "admin";
+
+  if (!client || isRestricted) return (
+    <div className="min-h-screen bg-[#f8fafc]">
+      <Header />
+      <main className="flex items-center justify-center py-20">
+        <div className="text-center p-10 bg-white rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 max-w-md mx-auto">
+          <div className="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert size={40} className="text-amber-500" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Acceso Restringido</h2>
+          <p className="text-slate-500 font-medium mt-3 leading-relaxed">
+            {isRestricted 
+              ? "No tienes permisos para ver o editar el perfil de un Administrador."
+              : "El cliente solicitado no existe en nuestra base de datos."}
+          </p>
+          <Link 
+            href="/admin/clients" 
+            className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95"
+          >
+            <ArrowLeft size={16} />
+            Volver a Clientes
+          </Link>
+        </div>
+      </main>
     </div>
   );
 

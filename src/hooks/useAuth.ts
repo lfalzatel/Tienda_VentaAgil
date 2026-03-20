@@ -19,6 +19,9 @@ export const useAuth = () => {
         return;
       }
 
+      // IMPORTANTE: Marcamos como cargando mientras obtenemos el perfil
+      setLoading(true);
+
       try {
         // Obtener rol (puedes optar por no bloquear aquí también si prefieres velocidad extrema)
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));

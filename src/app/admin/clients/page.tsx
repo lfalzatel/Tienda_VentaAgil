@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { NewClientModal } from "@/components/admin/NewClientModal";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Client {
   id: string;
@@ -24,6 +25,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
+  const { user: currentUser } = useAuthStore();
   const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "debtors">("debtors"); // Default to debtors as per user initial focus
@@ -47,6 +49,9 @@ export default function ClientsPage() {
   const totalGlobalDebt = clients.reduce((acc, c) => acc + c.totalDebt, 0);
 
   const filteredClients = clients.filter((c) => {
+    // Security: Propietario cannot see admins in the list
+    if (currentUser?.role === "propietario" && (c as any).role === "admin") return false;
+    
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
     if (activeTab === "debtors") return matchesSearch && c.totalDebt > 0;
     return matchesSearch;

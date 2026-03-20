@@ -9,13 +9,14 @@ import {
   ArrowDownRight,
   Banknote,
   History,
-  Plus
+  Plus,
+  Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { LowStockModal } from "./LowStockModal";
-
 import { StatsDetailModal } from "./StatsDetailModal";
+import { TopProductsModal } from "./TopProductsModal";
 
 interface StatProps {
   title: string;
@@ -23,7 +24,7 @@ interface StatProps {
   subValue: string;
   icon: any;
   trend?: "up" | "down";
-  color: "slate" | "red" | "emerald" | "orange" | "amber";
+  color: "slate" | "red" | "emerald" | "orange" | "amber" | "yellow";
   onClick?: () => void;
 }
 
@@ -34,6 +35,7 @@ const StatCard = ({ title, value, subValue, icon: Icon, trend, color, onClick }:
     emerald: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-200",
     orange: "bg-gradient-to-br from-orange-50 to-orange-100 text-orange-600 border-orange-200",
     amber: "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600 border-amber-200",
+    yellow: "bg-gradient-to-br from-amber-50 to-yellow-100 text-amber-600 border-amber-200",
   };
 
   return (
@@ -97,17 +99,21 @@ interface StatsGridProps {
     totalSales: number;
     totalReceived?: number;
   };
+  topProducts?: { name: string; quantity: number; revenue: number }[];
   filterLabel?: string;
   lowStockProducts?: any[];
   onViewSale?: (sale: any) => void;
 }
 
-export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], details, onViewSale }: StatsGridProps) => {
+export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], topProducts = [], details, onViewSale }: StatsGridProps) => {
   const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false);
+  const [isTopProductsModalOpen, setIsTopProductsModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState<{ isOpen: boolean; type: "income" | "credit" | "profit" | "debt" | null }>({
     isOpen: false,
     type: null
   });
+
+  const bestProduct = topProducts.length > 0 ? topProducts[0] : null;
 
   const openDetail = (type: "income" | "credit" | "profit" | "debt") => {
     setDetailModal({ isOpen: true, type });
@@ -115,7 +121,7 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], d
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6 w-full">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 w-full">
       <StatCard 
         title={`Ingresos Recibidos`} 
         value={`$${stats.cashReceived.toLocaleString("es-CO")}`} 
@@ -142,6 +148,15 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], d
         color="emerald"
         trend={stats.netProfit >= 0 ? "up" : "down"}
         onClick={() => openDetail("profit")}
+      />
+
+      <StatCard 
+        title="Producto Estrella" 
+        value={bestProduct ? bestProduct.name : "N/A"} 
+        subValue={bestProduct ? `${bestProduct.quantity} unidades vendidas` : "Sin ventas"}
+        icon={Trophy}
+        color="yellow"
+        onClick={() => setIsTopProductsModalOpen(true)}
       />
 
       <StatCard 
@@ -185,6 +200,14 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], d
       onClose={() => setIsLowStockModalOpen(false)}
       products={lowStockProducts}
     />
+
+    <TopProductsModal 
+      isOpen={isTopProductsModalOpen}
+      onClose={() => setIsTopProductsModalOpen(false)}
+      products={topProducts}
+      filterLabel={filterLabel}
+    />
     </>
   );
 };
+

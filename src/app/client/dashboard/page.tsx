@@ -103,6 +103,9 @@ export default function ClientDashboardPage() {
             };
           });
           updateTransactionsState();
+        }, (error) => {
+          if (error.code === "permission-denied") return;
+          console.error("Error in sales listener:", error);
         });
 
         const qTrans = query(
@@ -124,6 +127,9 @@ export default function ClientDashboardPage() {
             };
           });
           updateTransactionsState();
+        }, (error) => {
+          if (error.code === "permission-denied") return;
+          console.error("Error in trans listener:", error);
         });
 
         return () => {
@@ -135,6 +141,9 @@ export default function ClientDashboardPage() {
         setDebtor(null);
         setLoading(false);
       }
+    }, (error) => {
+      if (error.code === "permission-denied") return;
+      console.error("Error in debtor listener:", error);
     });
 
     return () => {
@@ -177,16 +186,19 @@ export default function ClientDashboardPage() {
       // 2. Asociar la cédula al perfil de Auth
       // Usamos setDoc con { merge: true } porque si es su primer login con Google,
       // el documento en la colección 'users' podría no existir aún.
+      const debtorDoc = snap.empty ? null : snap.docs[0].data();
+      const debtorRole = debtorDoc?.role;
+
       await setDoc(doc(db, "users", user.uid), {
         cedula: cedulaInput,
         phone: phoneInput || null,
         email: user.email,
-        // No sobreescribir el rol existente — merge:true preserva los demás campos.
-        // useAuth.ts asigna "client" por defecto solo si el doc no existe.
+        ...(debtorRole ? { role: debtorRole } : {}),
+        // No sobreescribir el rol existente si no hay un rol específico en debtor — merge:true preserva los demás campos.
       }, { merge: true });
 
       // Actualizar estado local
-      setUser({ ...user, cedula: cedulaInput });
+      setUser({ ...user, cedula: cedulaInput, role: debtorRole || user.role });
     } catch (error) {
       console.error("Error linking identity:", error);
       alert("Hubo un error al guardar tu perfil.");

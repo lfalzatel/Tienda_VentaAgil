@@ -20,7 +20,7 @@ export const ProductGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const { tabs, activeTabId, addItem } = useCartStore();
+  const { tabs, activeTabId, addItem, updateQuantity, removeItem } = useCartStore();
   const items = tabs.find(t => t.id === activeTabId)?.items || [];
 
   useEffect(() => {
@@ -89,13 +89,12 @@ export const ProductGrid = () => {
             {filteredProducts.map((product) => {
               const isSelected = items.some((item) => item.id === product.id);
               return (
-                <button
+                <div
                   key={product.id}
-                  onClick={() => addItem({ ...product, quantity: 1 })}
-                  disabled={product.stock <= 0}
+                  onClick={() => !isSelected && product.stock > 0 && addItem({ ...product, quantity: 1 })}
                   className={cn(
                     "group relative flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-0.5 text-left active:scale-[0.98]",
-                    product.stock <= 0 && "opacity-60 grayscale cursor-not-allowed",
+                    product.stock > 0 ? "cursor-pointer" : "opacity-60 grayscale cursor-not-allowed",
                     isSelected && "bg-sky-50 border-sky-200 ring-2 ring-sky-500/20"
                   )}
                 >
@@ -134,14 +133,46 @@ export const ProductGrid = () => {
                       )}>
                         Stock: {product.stock}
                       </span>
-                      {isSelected && (
-                        <div className="bg-sky-500 text-white p-1 rounded-full shadow-lg animate-in zoom-in duration-300">
-                          <Plus size={12} strokeWidth={4} />
+                      
+                      {isSelected ? (
+                        <div className="flex items-center gap-2 bg-sky-500 text-white p-1 rounded-2xl shadow-lg animate-in zoom-in duration-300">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const item = items.find(i => i.id === product.id);
+                              if (item) {
+                                if (item.quantity > 1) {
+                                  updateQuantity(product.id, item.quantity - 1);
+                                } else {
+                                  removeItem(product.id);
+                                }
+                              }
+                            }}
+                            className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-xl transition-colors"
+                          >
+                            <span className="text-lg font-bold">−</span>
+                          </button>
+                          <span className="text-xs font-black min-w-[12px] text-center">
+                            {items.find(i => i.id === product.id)?.quantity || 0}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addItem({ ...product, quantity: 1 });
+                            }}
+                            className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-xl transition-colors"
+                          >
+                            <Plus size={14} strokeWidth={4} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-slate-100 text-slate-400 p-2 rounded-xl group-hover:bg-sky-500 group-hover:text-white transition-all shadow-sm">
+                          <Plus size={14} strokeWidth={3} />
                         </div>
                       )}
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

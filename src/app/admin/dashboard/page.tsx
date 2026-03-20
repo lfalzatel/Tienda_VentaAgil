@@ -89,12 +89,18 @@ export default function DashboardPage() {
         activeCustomersCount: debtorsList.length,
         debtors: topDebtors
       }));
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en unsubDebtors:", err);
     });
 
     const qStock = query(collection(db, "products"), where("stock", "<=", 5));
     const unsubStock = onSnapshot(qStock, (snap) => {
       setStats((prev: any) => ({ ...prev, lowStockCount: snap.size }));
       setLowStockProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en unsubStock:", err);
     });
 
     return () => {
@@ -190,6 +196,9 @@ export default function DashboardPage() {
         totalSales: total,
         recentCreditSales: enrichedCreditSales
       }));
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en unsubSales:", err);
     });
 
     // 2. Listener para compras en el mismo rango de fechas
@@ -213,6 +222,9 @@ export default function DashboardPage() {
         ...prev,
         totalPurchases: totalSpent
       }));
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en unsubPurchases:", err);
     });
 
     return () => {
@@ -247,6 +259,27 @@ export default function DashboardPage() {
 
     return Object.entries(groups).map(([date, total]) => ({ date, total }));
   }, [allSales, activeFilter]);
+
+  const topProducts = useMemo(() => {
+    const map: Record<string, { name: string; quantity: number; revenue: number }> = {};
+  
+    allSales.forEach(sale => {
+      sale.items?.forEach((item: any) => {
+        const key = item.productId || item.name;
+        const name = item.name || item.productName || "Sin nombre";
+        const qty = item.quantity || 1;
+        const subtotal = item.subtotal || (item.price * qty) || 0;
+  
+        if (!map[key]) map[key] = { name, quantity: 0, revenue: 0 };
+        map[key].quantity += qty;
+        map[key].revenue += subtotal;
+      });
+    });
+  
+    return Object.values(map)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 20);
+  }, [allSales]);
 
   const filterLabel = activeFilter === "today" ? "Hoy" : 
                      activeFilter === "week" ? "Semana" : 
@@ -293,6 +326,7 @@ export default function DashboardPage() {
             totalSales: stats.totalSales || 0,
             totalReceived: stats.cashReceived || 0
           }}
+          topProducts={topProducts}
         />
 
         {/* Charts & Recent Activity */}

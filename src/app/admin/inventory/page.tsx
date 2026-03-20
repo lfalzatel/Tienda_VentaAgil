@@ -44,6 +44,9 @@ export default function InventoryPage() {
         ...(doc.data() as Omit<Product, "id">),
       }));
       setProducts(docs);
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en onSnapshot productos:", err);
     });
 
     return () => unsubscribe();
