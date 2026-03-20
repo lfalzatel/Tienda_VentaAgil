@@ -40,7 +40,7 @@ export const ProductGrid = () => {
 
   const categories = ["Todos", ...Array.from(new Set(products.map((p) => p.category)))];
 
-  const filteredProducts = products
+  const filteredProducts = [...products]
     .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0))
     .filter((p) => {
       const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -49,7 +49,7 @@ export const ProductGrid = () => {
     });
 
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col h-full space-y-3">
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow group">

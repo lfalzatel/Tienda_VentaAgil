@@ -25,8 +25,9 @@ export function RecalculatePopularity() {
       
       sales.forEach(sale => {
         sale.items?.forEach((item: any) => {
-          if (item.id) {
-            popularityMap[item.id] = (popularityMap[item.id] || 0) + (item.quantity || 0);
+          const productId = item.id || item.productId;
+          if (productId) {
+            popularityMap[productId] = (popularityMap[productId] || 0) + (item.quantity || 0);
           }
         });
       });

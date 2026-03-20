@@ -253,7 +253,7 @@ export default function DashboardPage() {
   
     allSales.forEach(sale => {
       sale.items?.forEach((item: any) => {
-        const key = item.productId || item.name;
+        const key = item.productId || item.id || item.name;
         const name = item.name || item.productName || "Sin nombre";
         const qty = item.quantity || 1;
         const subtotal = item.subtotal || (item.price * qty) || 0;

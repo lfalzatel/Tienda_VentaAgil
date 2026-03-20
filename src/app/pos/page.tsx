@@ -22,17 +22,17 @@ export default function POSPage() {
         {/* Left Side: Product Catalog */}
         <div className="flex-grow p-4 sm:p-6 overflow-hidden flex flex-col">
           <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
-            <header className="mb-4 shrink-0">
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 italic">
+            <header className="mb-1 shrink-0">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 italic">
                 VentaÁgil
               </h1>
-              <p className="text-slate-500 font-medium text-xs sm:text-sm">
+              <p className="text-slate-400 font-medium text-[10px] sm:text-xs">
                 Selecciona los productos para iniciar una venta
               </p>
             </header>
 
             {/* Tab Bar Container */}
-            <div className="flex items-end gap-1 mb-4 overflow-x-auto pt-2 px-2 border-b-2 border-slate-200 custom-scrollbar shrink-0 min-h-[48px]">
+            <div className="flex items-end gap-1 mb-2 overflow-x-auto pt-1 px-2 border-b-2 border-slate-200 custom-scrollbar shrink-0 min-h-[40px]">
               {tabs.map(tab => (
                 <div 
                   key={tab.id}
