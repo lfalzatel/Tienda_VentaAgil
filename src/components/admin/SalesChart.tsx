@@ -34,7 +34,7 @@ export const SalesChart = ({ data }: SalesChartProps) => {
       </div>
 
       <div className="flex-grow min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={300} minHeight={300}>
           <AreaChart
             data={data}
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
