@@ -55,11 +55,13 @@ export const useSales = () => {
 
         // 2. ESCRITURAS
         
-        // 2.1. Actualizar stock
+        // 2.1. Actualizar stock y popularidad
         productSnapshots.forEach((productDoc, index) => {
           const item = data.items[index];
+          const currentData = productDoc.data();
           transaction.update(productDoc.ref, {
-            stock: (productDoc.data()?.stock || 0) - item.quantity
+            stock: (currentData?.stock || 0) - item.quantity,
+            salesCount: (currentData?.salesCount || 0) + item.quantity
           });
         });
 

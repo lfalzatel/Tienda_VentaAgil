@@ -16,10 +16,11 @@ import {
   ArrowRight,
   ShoppingBag,
   CreditCard,
-  Banknote
+  Banknote,
+  Plus
 } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { RecalculatePopularity } from "@/components/admin/RecalculatePopularity";
 
 interface Sale {
   id: string;
@@ -86,7 +87,7 @@ export default function DashboardPage() {
       setStats((prev: any) => ({ 
         ...prev, 
         totalDebt: total, 
-        activeCustomersCount: debtorsList.length,
+        activeCustomersCount: debtorsList.slice(0, 10).length,
         debtors: topDebtors
       }));
     }, (err) => {
@@ -148,7 +149,6 @@ export default function DashboardPage() {
       let digital = 0;
       let credit = 0;
       let costOfSoldItemsCount = 0;
-      const creditSalesList: any[] = [];
 
       sales.forEach(sale => {
         total += sale.total || 0;
@@ -157,7 +157,6 @@ export default function DashboardPage() {
         if (sale.paymentMethod === "Digital") digital += sale.total || 0;
         if (sale.paymentMethod === "Credit") {
           credit += sale.total || 0;
-          creditSalesList.push(sale);
         }
         
         sale.items?.forEach((item: any) => {
@@ -169,11 +168,9 @@ export default function DashboardPage() {
       
       setCostOfSoldItems(costOfSoldItemsCount);
 
-      // Enriquecer TODAS las ventas con customerName y debtorName
       const enrichedSales = sales.map(sale => {
          if (sale.paymentMethod === "Credit") {
-             const fallbackName = sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null;
-             const name = sale.customerName || fallbackName || "Cliente Desconocido";
+             const name = sale.customerName || (sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null) || "Cliente Desconocido";
              return { ...sale, customerName: name, debtorName: name };
          }
          return sale;
@@ -201,7 +198,6 @@ export default function DashboardPage() {
       console.error("Error en unsubSales:", err);
     });
 
-    // 2. Listener para compras en el mismo rango de fechas
     let qPurchases = query(
       collection(db, "purchases"),
       where("createdAt", ">=", Timestamp.fromDate(start))
@@ -218,10 +214,6 @@ export default function DashboardPage() {
       });
       
       setTotalPurchaseExpense(totalSpent);
-      setStats((prev: any) => ({
-        ...prev,
-        totalPurchases: totalSpent
-      }));
     }, (err) => {
       if (err.code === "permission-denied") return;
       console.error("Error en unsubPurchases:", err);
@@ -233,7 +225,6 @@ export default function DashboardPage() {
     };
   }, [activeFilter, selectedDate]);
 
-  // 3. Recalcular ganancia neta cuando cambien costos o gastos de compras
   useEffect(() => {
     setStats((prev: any) => ({
       ...prev,
@@ -241,11 +232,8 @@ export default function DashboardPage() {
     }));
   }, [totalPurchaseExpense, stats.cashReceived]);
 
-  // Generar datos para el gráfico basados en las ventas filtradas
   const chartData = useMemo(() => {
     const groups: Record<string, number> = {};
-    
-    // Sort allSales by date first to ensure sequential grouping
     const sortedSales = [...allSales].sort((a, b) => a.createdAt.toDate() - b.createdAt.toDate());
 
     sortedSales.forEach(sale => {
@@ -290,7 +278,6 @@ export default function DashboardPage() {
       <Header />
       
       <main className="flex-grow p-6 sm:p-10 overflow-y-auto custom-scrollbar max-w-7xl mx-auto w-full space-y-10 pb-20">
-        {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-slate-900/10">
@@ -314,7 +301,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Info Grid */}
         <StatsGrid 
           stats={stats} 
           filterLabel={filterLabel}
@@ -329,7 +315,6 @@ export default function DashboardPage() {
           topProducts={topProducts}
         />
 
-        {/* Charts & Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2">
             <SalesChart data={chartData} />
@@ -381,29 +366,24 @@ export default function DashboardPage() {
                         <span>{sale.paymentMethod}</span>
                         <span className="h-1 w-1 rounded-full bg-slate-200"></span>
                         <span>{sale.items.length} items</span>
-                        {!(sale.customerName || sale.debtorName) && sale.createdAt?.toDate && (
-                          <>
-                            <span className="h-1 w-1 rounded-full bg-slate-200"></span>
-                            <span>{sale.createdAt.toDate().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
-                          </>
-                        )}
                       </p>
                     </div>
                   </div>
                   <ArrowRight size={16} className="text-slate-200 group-hover:text-slate-900 transition-colors" />
                 </button>
               ))}
-              
-              {recentSales.length === 0 && (
-                <div className="py-20 text-center opacity-30 select-none flex flex-col items-center">
-                   <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                     <ShoppingBag size={40} className="text-slate-300" />
-                   </div>
-                   <p className="font-black text-sm text-slate-500 uppercase tracking-widest">Sin ventas en este rango</p>
-                </div>
-              )}
             </div>
-            
+          </div>
+        </div>
+
+        {/* Maintenance / Utilities */}
+        <div className="pt-10 border-t border-slate-100">
+          <div className="max-w-md">
+            <h2 className="text-xl font-black tracking-tighter text-slate-900 mb-4 flex items-center gap-2">
+              <Plus size={20} className="text-slate-400" />
+              Utilidades de Sistema
+            </h2>
+            <RecalculatePopularity />
           </div>
         </div>
       </main>

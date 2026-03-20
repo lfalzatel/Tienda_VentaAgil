@@ -14,6 +14,7 @@ interface Product {
   category: string;
   stock: number;
   image?: string;
+  salesCount?: number;
 }
 
 export const ProductGrid = () => {
@@ -39,11 +40,13 @@ export const ProductGrid = () => {
 
   const categories = ["Todos", ...Array.from(new Set(products.map((p) => p.category)))];
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todos" || p.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = products
+    .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0))
+    .filter((p) => {
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "Todos" || p.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
 
   return (
     <div className="flex flex-col h-full space-y-6">
