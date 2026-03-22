@@ -358,7 +358,7 @@ export default function ClientOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
       <Header title="Mis Pedidos" />
       
       <main className="flex-grow p-6 sm:p-10 flex flex-col max-w-4xl mx-auto w-full animate-in fade-in duration-500">

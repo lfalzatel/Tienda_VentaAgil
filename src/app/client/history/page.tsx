@@ -393,7 +393,7 @@ export default function ClientHistoryPage() {
   // Si no está registrado
   if (!user.cedula) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24">
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
         <Header title="Historial" />
         <main className="flex-grow flex items-center justify-center p-6 text-center">
             <p className="text-slate-500 font-medium">Por favor, completa tu perfil en Tu Cuenta para acceder al historial.</p>
@@ -403,7 +403,7 @@ export default function ClientHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
       <Header title="Historial" />
       <main className="flex-grow p-4 sm:p-8 flex flex-col max-w-4xl mx-auto w-full space-y-6">
         

@@ -432,7 +432,7 @@ function ClientDashboardContent() {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex flex-col">
         <Header />
-        <main className="flex-grow flex items-center justify-center p-6 pb-24">
+        <main className="flex-grow flex items-center justify-center p-6 pb-28">
           <div className="max-w-md w-full bg-white rounded-[3rem] p-8 shadow-xl shadow-emerald-900/5 animate-in slide-in-from-bottom-5 duration-500">
             <div className="text-center mb-8">
               <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4 shadow-inner">
@@ -490,7 +490,7 @@ function ClientDashboardContent() {
 
   // --- VISTA DASHBOARD ---
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
       <Header title={activeTab === 'cuenta' ? "Tu Estado de Cuenta" : "Mis Gastos"} />
       
       {/* Tabs */}

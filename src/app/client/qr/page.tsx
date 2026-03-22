@@ -10,7 +10,7 @@ export default function ClientQrPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
       <Header title="Mi Código" />
       <main className="flex-grow p-6 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500">
         <div className="bg-white p-8 sm:p-12 rounded-[3.5rem] shadow-2xl shadow-emerald-500/10 border border-slate-100 flex flex-col items-center w-full max-w-sm">
