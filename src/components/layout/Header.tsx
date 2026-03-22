@@ -10,13 +10,20 @@ import {
   Users2, 
   MonitorSmartphone,
   Skull,
-  Bell
+  Bell,
+  CheckCircle,
+  XCircle,
+  MessageCircle,
+  Wallet
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
+import { collection, query, where, onSnapshot, updateDoc, doc, orderBy, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { requestPushPermission, onForegroundMessage } from "@/lib/utils/pushNotifications";
 
 interface HeaderProps {
   title?: string;
@@ -27,6 +34,66 @@ export const Header = ({ title }: HeaderProps) => {
   const { user } = useAuthStore();
   const pathname = usePathname();
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+
+  interface Notification {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    read: boolean;
+    link: string;
+    createdAt: any;
+  }
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    if (!user || (user.role !== "admin" && user.role !== "propietario")) return;
+    
+    const qOrders = query(collection(db, "orders"), where("status", "==", "pending"));
+    const unsub = onSnapshot(qOrders, (snap) => {
+      setPendingOrdersCount(snap.docs.length);
+    });
+    return () => unsub();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // Pedir permisos de notificaciones
+    const timer = setTimeout(() => {
+      requestPushPermission(user.uid);
+    }, 3000);
+
+    const unsubMessage = onForegroundMessage((payload) => {
+      // Podríamos mostrar un toast, pero con la campana se actualiza igual
+      console.log("Nueva notificación en primer plano", payload);
+    });
+
+    return () => {
+      clearTimeout(timer);
+      unsubMessage();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const q = query(
+      collection(db, "notifications"),
+      where("recipientId", "==", user.uid),
+      orderBy("createdAt", "desc"),
+      limit(20)
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as Notification)));
+    });
+
+    return () => unsub();
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,7 +105,30 @@ export const Header = ({ title }: HeaderProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const notifIconConfig: Record<string, { icon: React.ReactNode; bg: string }> = {
+    order_confirmed: { icon: <CheckCircle size={16} className="text-emerald-600" />, bg: "bg-emerald-100" },
+    order_rejected:  { icon: <XCircle size={16} className="text-red-500" />,     bg: "bg-red-100" },
+    order_message:   { icon: <MessageCircle size={16} className="text-sky-600" />, bg: "bg-sky-100" },
+    new_order:       { icon: <ShoppingBag size={16} className="text-violet-600" />, bg: "bg-violet-100" },
+    new_client:      { icon: <Users2 size={16} className="text-amber-600" />,    bg: "bg-amber-100" },
+    debt_payment:    { icon: <Wallet size={16} className="text-emerald-600" />,  bg: "bg-emerald-100" },
+    debt_paid:       { icon: <Wallet size={16} className="text-emerald-600" />,  bg: "bg-emerald-100" },
+  };
 
+  const markAsRead = async (notifId: string) => {
+    try {
+      await updateDoc(doc(db, "notifications", notifId), { read: true });
+    } catch {}
+  };
+
+  const formatTimeAgo = (timestamp: any): string => {
+    if (!timestamp?.seconds) return "Reciente";
+    const diff = Math.floor((Date.now() - timestamp.seconds * 1000) / 1000);
+    if (diff < 60) return "Hace un momento";
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
+    return `Hace ${Math.floor(diff / 86400)} d`;
+  };
 
   const navItems = [
     { label: "Vender", href: "/pos", icon: <MonitorSmartphone size={18} /> },
@@ -81,6 +171,20 @@ export const Header = ({ title }: HeaderProps) => {
         {/* Right: Actions & User */}
         <div className="flex items-center gap-3 sm:gap-4">
 
+          {/* Icono de Pedidos (Admin) */}
+          {(user?.role === "admin" || user?.role === "propietario") && (
+            <Link 
+              href="/admin/orders"
+              className="relative flex items-center justify-center p-2 rounded-full border bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 group outline-none"
+            >
+              <ShoppingBag size={18} className="transition-transform group-hover:rotate-12 origin-top" />
+              {pendingOrdersCount > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] font-black px-1 shadow-[0_0_8px_rgba(244,63,94,0.8)] border-2 border-[#0a1914] animate-pulse">
+                  {pendingOrdersCount > 99 ? '99+' : pendingOrdersCount}
+                </div>
+              )}
+            </Link>
+          )}
 
           {/* Icono de Campana */}
           <div className="relative" ref={notificationsRef}>
@@ -94,7 +198,11 @@ export const Header = ({ title }: HeaderProps) => {
               )}
             >
               <Bell size={18} className="transition-transform group-hover:rotate-12 origin-top" />
-              <div className="absolute top-1 outline outline-2 outline-[#0a1914] right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]"></div>
+              {unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] font-black px-1 shadow-[0_0_8px_rgba(244,63,94,0.8)] border-2 border-[#0a1914]">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </div>
+              )}
             </button>
 
             {/* Dropdown de Notificaciones */}
@@ -103,36 +211,54 @@ export const Header = ({ title }: HeaderProps) => {
                 <div className="relative overflow-hidden rounded-[2rem] bg-white/95 backdrop-blur-3xl border border-slate-200/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col">
                   <div className="px-5 py-4 bg-slate-50/80 border-b border-slate-100 flex justify-between items-center backdrop-blur-md">
                     <h3 className="text-sm font-black text-slate-800 tracking-tight">Notificaciones</h3>
-                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-wider">2 Nuevas</span>
+                    {unreadCount > 0 
+                      ? <span className="text-[10px] font-bold bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-wider">{unreadCount} Nueva{unreadCount > 1 ? "s" : ""}</span>
+                      : <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-wider">Al día</span>
+                    }
                   </div>
                   
                   <div className="p-2 overflow-y-auto max-h-[60vh] custom-scrollbar">
-                    {/* Placeholder Notification 1 */}
-                    <div className="p-3 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-slate-100 hover:shadow-sm mb-1 group">
-                      <div className="flex gap-3">
-                        <div className="w-9 h-9 rounded-full bg-emerald-100 shadow-inner flex items-center justify-center text-emerald-600 shrink-0">
-                          <ShoppingBag size={16} className="group-hover:scale-110 transition-transform" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Nueva Venta a Crédito</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">Se ha registrado una nueva venta a crédito a nombre de Juan.</p>
-                          <span className="text-[9px] font-black text-slate-400 mt-1.5 block uppercase tracking-widest">Hace 10 min</span>
-                        </div>
+                    {notifications.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <p className="text-xs font-bold text-slate-400">Sin notificaciones</p>
                       </div>
-                    </div>
-                    {/* Placeholder Notification 2 */}
-                    <div className="p-3 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-slate-100 hover:shadow-sm group">
-                      <div className="flex gap-3">
-                        <div className="w-9 h-9 rounded-full bg-amber-100 shadow-inner flex items-center justify-center text-amber-600 shrink-0">
-                          <Users2 size={16} className="group-hover:scale-110 transition-transform" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-800 group-hover:text-amber-600 transition-colors">Nuevo Cliente Registrado</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">Se ha creado el perfil de cliente en la base de datos local exitosamente.</p>
-                          <span className="text-[9px] font-black text-slate-400 mt-1.5 block uppercase tracking-widest">Hace 1 h</span>
-                        </div>
-                      </div>
-                    </div>
+                    ) : (
+                      notifications.map(notif => (
+                        <Link
+                          key={notif.id}
+                          href={notif.link}
+                          onClick={() => {
+                            if (!notif.read) markAsRead(notif.id);
+                            setIsNotificationsOpen(false);
+                          }}
+                          className={cn(
+                            "flex gap-3 p-3 rounded-2xl transition-all border mb-1 group",
+                            notif.read
+                              ? "border-transparent hover:bg-slate-50 hover:border-slate-100"
+                              : "bg-emerald-50/60 border-emerald-100 hover:bg-emerald-50"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-inner",
+                            notifIconConfig[notif.type]?.bg || "bg-slate-100"
+                          )}>
+                            {notifIconConfig[notif.type]?.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("text-xs font-bold", notif.read ? "text-slate-700" : "text-slate-900")}>
+                              {notif.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">{notif.body}</p>
+                            <span className="text-[9px] font-black text-slate-400 mt-1 block uppercase tracking-widest">
+                              {formatTimeAgo(notif.createdAt)}
+                            </span>
+                          </div>
+                          {!notif.read && (
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full mt-1 shrink-0" />
+                          )}
+                        </Link>
+                      ))
+                    )}
                   </div>
                   
                   <div className="p-2 bg-slate-50/50 border-t border-slate-100">

@@ -19,9 +19,11 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePWAStore } from "@/store/usePWAStore";
 import { cn } from "@/lib/utils";
+import { hasBiometricRegistered, removeBiometric } from "@/lib/utils/webauthn";
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isBiometricRegistered, setIsBiometricRegistered] = useState(false);
   const { user } = useAuthStore();
   const { deferredPrompt, setDeferredPrompt } = usePWAStore();
   const router = useRouter();
@@ -38,6 +40,22 @@ export const UserMenu = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsBiometricRegistered(hasBiometricRegistered());
+    }
+  }, [isOpen]);
+
+  const handleToggleBiometric = () => {
+    if (isBiometricRegistered) {
+      removeBiometric();
+      setIsBiometricRegistered(false);
+      alert("Biometría desactivada correctamente. Se pedirá contraseña en el próximo ingreso.");
+    } else {
+      alert("Para activar la biometría, cierra sesión e ingresa nuevamente con tu contraseña.");
+    }
+  };
 
   const handleInstallApp = async () => {
     try {
@@ -151,7 +169,27 @@ export const UserMenu = () => {
 
             <div className="space-y-1">
               <MenuButton icon={<UserIcon size={18} />} label="Mi Perfil" onClick={() => setIsOpen(false)} />
-              <MenuButton icon={<Fingerprint size={18} />} label="Seguridad / Huella" onClick={() => setIsOpen(false)} />
+              
+              {isBiometricRegistered ? (
+                <MenuButton 
+                  icon={<Fingerprint size={18} className="text-red-400 group-hover:text-red-500" />} 
+                  label="Desactivar Huella" 
+                  onClick={() => {
+                    handleToggleBiometric();
+                    setIsOpen(false);
+                  }} 
+                />
+              ) : (
+                <MenuButton 
+                  icon={<Fingerprint size={18} />} 
+                  label="Activar Huella" 
+                  onClick={() => {
+                    handleToggleBiometric();
+                    setIsOpen(false);
+                  }} 
+                />
+              )}
+
               <MenuButton icon={<Share2 size={18} />} label="Compartir Acceso" onClick={handleShare} />
               
               <MenuButton 

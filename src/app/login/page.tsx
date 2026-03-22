@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/config";
 import { useRouter } from "next/navigation";
-import { Skull, Eye, EyeOff, Mail } from "lucide-react";
+import { Skull, Eye, EyeOff, Mail, Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isBiometricAvailable, hasBiometricRegistered, verifyBiometric, registerBiometric, removeBiometric } from "@/lib/utils/webauthn";
 
 // Custom Google and Facebook Icons
 const GoogleIcon = () => (
@@ -27,6 +28,65 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricRegistered, setBiometricRegistered] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
+
+  useEffect(() => {
+    const checkBiometric = async () => {
+      const available = await isBiometricAvailable();
+      setBiometricAvailable(available);
+      setBiometricRegistered(hasBiometricRegistered());
+    };
+    checkBiometric();
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    setError("");
+    try {
+      const verifiedEmail = await verifyBiometric();
+      if (!verifiedEmail) {
+        setError("Biometría no verificada.");
+        return;
+      }
+
+      const refreshToken = sessionStorage.getItem("fb_rt");
+      if (!refreshToken) {
+        setError("Sesión expirada. Ingresa con tu contraseña una vez más.");
+        removeBiometric();
+        setBiometricRegistered(false);
+        return;
+      }
+
+      const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+      const res = await fetch(
+        `https://securetoken.googleapis.com/v1/token?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+        }
+      );
+      const data = await res.json();
+      if (!data.id_token) throw new Error("Token inválido");
+
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: data.id_token })
+      });
+
+      sessionStorage.setItem("fb_rt", data.refresh_token);
+      router.push("/pos");
+    } catch {
+      setError("Error al autenticar con biometría. Intenta con contraseña.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -43,7 +103,16 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       });
 
-      router.push("/pos");
+      const available = await isBiometricAvailable();
+      if (available && !hasBiometricRegistered()) {
+        sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
+        setShowBiometricPrompt(true);
+      } else if (available && hasBiometricRegistered()) {
+        sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
+        router.push("/pos");
+      } else {
+        router.push("/pos");
+      }
     } catch (err: any) {
       console.error(err);
       setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
@@ -65,7 +134,16 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       });
 
-      router.push("/pos");
+      const available = await isBiometricAvailable();
+      if (available && !hasBiometricRegistered()) {
+        sessionStorage.setItem("fb_rt", result.user.refreshToken);
+        setShowBiometricPrompt(true);
+      } else if (available && hasBiometricRegistered()) {
+        sessionStorage.setItem("fb_rt", result.user.refreshToken);
+        router.push("/pos");
+      } else {
+        router.push("/pos");
+      }
     } catch (err: any) {
       console.error(err);
       if (err.code !== "auth/popup-closed-by-user") {
@@ -82,6 +160,42 @@ export default function LoginPage() {
         <div className="absolute top-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-sky-100 blur-[120px] opacity-50"></div>
         <div className="absolute bottom-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-blue-100 blur-[120px] opacity-50"></div>
       </div>
+
+      {showBiometricPrompt && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl animate-in slide-in-from-bottom-5">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                <Fingerprint size={32} className="text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900">Acceso rápido</h3>
+              <p className="text-sm text-slate-500 mt-2">
+                Activa tu huella o Face ID para entrar sin contraseña la próxima vez.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={async () => {
+                  const registered = await registerBiometric(email || auth.currentUser?.email || "Usuario");
+                  if (registered) {
+                    setBiometricRegistered(true);
+                  }
+                  router.push("/pos");
+                }}
+                className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98]"
+              >
+                Activar biometría
+              </button>
+              <button
+                onClick={() => router.push("/pos")}
+                className="w-full py-3 text-slate-400 text-sm font-bold hover:text-slate-600 transition-colors"
+              >
+                Ahora no
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="w-full max-w-[440px] space-y-8 relative z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
         {/* Logo Section */}
@@ -99,6 +213,22 @@ export default function LoginPage() {
 
         {/* Form Container */}
         <div className="bg-white/80 backdrop-blur-2xl border border-white/50 p-10 rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)]">
+          {/* Biometric Login */}
+          {biometricAvailable && biometricRegistered && (
+            <button
+              type="button"
+              onClick={handleBiometricLogin}
+              disabled={biometricLoading || loading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-4 border-2 border-emerald-200 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all duration-300 font-bold text-emerald-700 active:scale-[0.97] shadow-sm"
+            >
+              {biometricLoading
+                ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                : <Fingerprint size={22} className="text-emerald-600" />
+              }
+              <span>Entrar con huella / Face ID</span>
+            </button>
+          )}
+
           {/* Social Login (Primary) */}
           <button
             onClick={() => handleSocialLogin(googleProvider)}

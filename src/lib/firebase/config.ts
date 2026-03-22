@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, connectAuthEmulator, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
+import { getMessaging } from "firebase/messaging";
 import { 
   initializeFirestore, 
   connectFirestoreEmulator, 
@@ -53,5 +54,7 @@ if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
 
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
+
+export const messaging = typeof window !== "undefined" ? getMessaging(app) : null;
 
 export { app, auth, db, storage, googleProvider, facebookProvider };

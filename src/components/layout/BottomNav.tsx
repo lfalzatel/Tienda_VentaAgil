@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { 
   ShoppingCart,
   LayoutDashboard,
@@ -11,18 +12,27 @@ import {
   Home,
   History,
   QrCode,
-  ReceiptText
+  MessageCircle
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { cn } from "@/lib/utils";
 
-export const BottomNav = () => {
+const BottomNavContent = () => {
   const { user } = useAuthStore();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
 
   if (!user) return null;
 
-  const adminNavItems = [
+  type NavItem = {
+    label: string;
+    path: string;
+    icon: React.ElementType;
+    match?: (p: string, t: string | null) => boolean;
+  };
+
+  const adminNavItems: NavItem[] = [
     { label: "Vender", path: "/pos", icon: ShoppingCart },
     { label: "Inventario", path: "/admin/inventory", icon: Package },
     { label: "Clientes", path: "/admin/clients", icon: Users },
@@ -30,11 +40,11 @@ export const BottomNav = () => {
     { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   ];
 
-  const clientNavItems = [
-    { label: "Resumen", path: "/client/dashboard", icon: Home },
-    { label: "Historial", path: "/client/history", icon: History },
-    { label: "Mis Gastos", path: "/client/expenses", icon: ReceiptText },
-    { label: "Mi Código", path: "/client/qr", icon: QrCode },
+  const clientNavItems: NavItem[] = [
+    { label: "Resumen", path: "/client/dashboard", icon: Home, match: (p: string, t: string | null) => p === "/client/dashboard" && t !== "gastos" },
+    { label: "Historial", path: "/client/history", icon: History, match: (p: string, t: string | null) => p === "/client/history" },
+    { label: "Pedidos", path: "/client/orders", icon: MessageCircle, match: (p: string, t: string | null) => p === "/client/orders" },
+    { label: "Mi Código", path: "/client/qr", icon: QrCode, match: (p: string, t: string | null) => p === "/client/qr" },
   ];
 
   const navItems = user.role === "client" ? clientNavItems : adminNavItems;
@@ -43,7 +53,7 @@ export const BottomNav = () => {
     <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[60] w-[calc(100vw-24px)] max-w-sm">
       <nav className="flex items-end justify-around px-1 py-2 bg-white/50 backdrop-blur-sm border border-emerald-100 rounded-[2rem] shadow-2xl shadow-emerald-900/10">
         {navItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive = item.match ? item.match(pathname, tab) : pathname === item.path;
           const Icon = item.icon;
           
           return (
@@ -92,5 +102,13 @@ export const BottomNav = () => {
         })}
       </nav>
     </div>
+  );
+};
+
+export const BottomNav = () => {
+  return (
+    <Suspense fallback={null}>
+      <BottomNavContent />
+    </Suspense>
   );
 };
