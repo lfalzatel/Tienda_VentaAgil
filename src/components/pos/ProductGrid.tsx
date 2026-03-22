@@ -81,7 +81,7 @@ export const ProductGrid = () => {
       </div>
 
       {/* Grid */}
-      <div className="pb-28">
+      <div>
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <Package className="text-slate-200 mb-4" size={48} />

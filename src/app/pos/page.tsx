@@ -18,7 +18,7 @@ export default function POSPage() {
     <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
       <Header />
       
-      <main className="flex-grow flex overflow-hidden relative">
+      <main className="flex-grow flex overflow-y-auto relative pb-28">
         {/* Left Side: Product Catalog */}
         <div className="flex-grow p-4 sm:p-6 flex flex-col">
           <div className="max-w-7xl mx-auto w-full flex flex-col">

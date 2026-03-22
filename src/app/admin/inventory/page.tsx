@@ -71,10 +71,10 @@ export default function InventoryPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8fafc] pb-28">
+    <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
       <Header />
       
-      <main className="flex-grow p-6 sm:p-10 flex flex-col max-w-7xl mx-auto w-full">
+      <main className="flex-grow p-6 sm:p-10 overflow-y-auto flex flex-col max-w-7xl mx-auto w-full pb-28">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
