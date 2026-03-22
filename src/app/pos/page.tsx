@@ -20,8 +20,8 @@ export default function POSPage() {
       
       <main className="flex-grow flex overflow-hidden relative">
         {/* Left Side: Product Catalog */}
-        <div className="flex-grow p-4 sm:p-6 overflow-hidden flex flex-col">
-          <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
+        <div className="flex-grow p-4 sm:p-6 flex flex-col">
+          <div className="max-w-7xl mx-auto w-full flex flex-col">
             <header className="mb-1 shrink-0">
               <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 italic">
                 VentaÁgil
@@ -90,7 +90,7 @@ export default function POSPage() {
               </button>
             </div>
             
-            <div className="flex-grow overflow-hidden relative">
+            <div className="relative">
               <ProductGrid />
             </div>
           </div>

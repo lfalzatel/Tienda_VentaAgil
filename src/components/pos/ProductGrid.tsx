@@ -81,7 +81,7 @@ export const ProductGrid = () => {
       </div>
 
       {/* Grid */}
-      <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
+      <div className="pb-28">
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <Package className="text-slate-200 mb-4" size={48} />

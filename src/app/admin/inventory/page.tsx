@@ -71,10 +71,10 @@ export default function InventoryPage() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-[#f8fafc] overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-[#f8fafc] pb-28">
       <Header />
       
-      <main className="flex-grow p-6 sm:p-10 overflow-hidden flex flex-col max-w-7xl mx-auto w-full">
+      <main className="flex-grow p-6 sm:p-10 flex flex-col max-w-7xl mx-auto w-full">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
@@ -138,7 +138,7 @@ export default function InventoryPage() {
         </div>
 
         {/* Table/List Area */}
-        <div className="flex-grow overflow-y-auto custom-scrollbar bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-50">
               <tr>
