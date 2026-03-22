@@ -12,12 +12,13 @@ import { cn } from "@/lib/utils";
 
 interface Transaction {
   id: string;
-  type: "sale" | "payment";
+  type: "sale" | "payment" | "order";
   amount: number;
   date: any;
   description?: string;
   saleId?: string;
   paymentMethod?: string;
+  status?: string;
 }
 
 interface DebtorData {
@@ -101,9 +102,10 @@ function ClientDashboardContent() {
         // We need to fetch both all sales and payments separately
         let currentSales: Transaction[] = [];
         let currentPayments: Transaction[] = [];
+        let currentOrders: Transaction[] = [];
 
         const updateTransactionsState = () => {
-          const merged: Transaction[] = [...currentSales];
+          const merged: Transaction[] = [...currentSales, ...currentOrders];
           
           currentPayments.forEach(pt => {
             if (pt.type === "payment") {
@@ -171,9 +173,35 @@ function ClientDashboardContent() {
           console.error("Error in trans listener:", error);
         });
 
+        const qOrders = query(
+          collection(db, "orders"),
+          where("clientId", "==", user.uid),
+          where("status", "==", "confirmed")
+        );
+
+        const unsubOrders = onSnapshot(qOrders, (snap) => {
+          currentOrders = snap.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              type: "order" as const,
+              amount: data.total || 0,
+              date: data.confirmedAt || data.createdAt,
+              description: `Pedido #${d.id.slice(0, 6).toUpperCase()} — ${data.items?.length || 0} productos`,
+              paymentMethod: data.paymentMethod || "Cash",
+              status: "confirmed"
+            };
+          });
+          updateTransactionsState();
+        }, (err) => {
+          if (err.code === "permission-denied") return;
+          console.error("Error en orders listener:", err);
+        });
+
         return () => {
           unsubSales();
           unsubTrans();
+          unsubOrders();
         };
       } else {
         // En teoría no debería pasar si fue onboarded
@@ -542,12 +570,16 @@ function ClientDashboardContent() {
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
-                      tr.type === "sale" 
-                        ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500") 
-                        : "bg-emerald-50 text-emerald-600"
+                      tr.type === "order"
+                        ? "bg-violet-50 text-violet-600"
+                        : tr.type === "sale" 
+                          ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500") 
+                          : "bg-emerald-50 text-emerald-600"
                     )}>
                       {loadingSaleId === tr.id ? (
                         <Loader2 size={20} className="animate-spin" />
+                      ) : tr.type === "order" ? (
+                        <ShoppingBag size={20} />
                       ) : tr.type === "sale" ? (
                         tr.paymentMethod?.toLowerCase() === 'credit' ? <ArrowUpRight size={20} /> : <ShoppingBag size={20} />
                       ) : (
@@ -556,7 +588,7 @@ function ClientDashboardContent() {
                     </div>
                     <div>
                       <p className="text-sm font-black text-slate-900">
-                        {tr.type === "sale" ? "Nueva Compra" : "Pago Realizado"}
+                        {tr.type === "order" ? "Pedido Confirmado" : tr.type === "sale" ? "Nueva Compra" : "Pago Realizado"}
                       </p>
                       <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
                          <Calendar size={10} />
@@ -567,22 +599,26 @@ function ClientDashboardContent() {
                   <div className="text-right flex flex-col items-end">
                     <p className={cn(
                       "text-lg sm:text-xl font-black tracking-tighter leading-none",
-                      tr.type === "sale" 
-                        ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "text-red-500" : "text-slate-700") 
-                        : "text-emerald-500"
+                      tr.type === "order"
+                        ? "text-violet-600"
+                        : tr.type === "sale" 
+                          ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "text-red-500" : "text-slate-700") 
+                          : "text-emerald-500"
                     )}>
-                      {tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
+                      {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
                     </p>
                     <div className="mt-1.5 flex flex-col items-end">
                       <p className="text-[10px] font-medium text-slate-400">
-                        {tr.type === "sale" 
-                          ? (tr.paymentMethod?.toLowerCase() === 'credit' ? 'Compra a crédito' : 
-                             tr.paymentMethod === 'Cash' ? 'Compra en efectivo' : 
-                             tr.paymentMethod === 'Card' ? 'Pago con tarjeta' : 
-                             tr.paymentMethod === 'Digital' ? 'Pago digital' : 'Compra al contado') 
-                          : 'Abono a deuda'}
+                        {tr.type === "order"
+                          ? tr.description
+                          : tr.type === "sale" 
+                            ? (tr.paymentMethod?.toLowerCase() === 'credit' ? 'Compra a crédito' : 
+                               tr.paymentMethod === 'Cash' ? 'Compra en efectivo' : 
+                               tr.paymentMethod === 'Card' ? 'Pago con tarjeta' : 
+                               tr.paymentMethod === 'Digital' ? 'Pago digital' : 'Compra al contado') 
+                            : 'Abono a deuda'}
                       </p>
-                      {tr.description && tr.description.toLowerCase() !== 'abono a deuda' && (
+                      {tr.type !== "order" && tr.description && tr.description.toLowerCase() !== 'abono a deuda' && (
                          <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate mt-0.5">{tr.description}</p>
                       )}
                     </div>
