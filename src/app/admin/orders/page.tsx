@@ -136,13 +136,13 @@ export default function AdminOrdersPage() {
         createdAt: serverTimestamp(),
         sellerId: user?.uid || "system",
         sellerName: user?.name || "Admin",
-        clientId: selectedOrder.clientId,
+        clientId: selectedOrder.clientId || (selectedOrder as any).ClientId,
         clientName: selectedOrder.clientName
       });
 
       // 3. Crear el gasto en personal_expenses
       const expenseData = {
-        userId: selectedOrder.clientId,
+        userId: selectedOrder.clientId || (selectedOrder as any).ClientId,
         title: `Pedido #${selectedOrder.id.slice(-6).toUpperCase()}`,
         amount: selectedOrder.total,
         category: "Pedido",
@@ -163,7 +163,7 @@ export default function AdminOrdersPage() {
 
       // 5. Crear notificación (campana) para el cliente
       await addDoc(collection(db, "notifications"), {
-        recipientId: selectedOrder.clientId,
+        recipientId: selectedOrder.clientId || (selectedOrder as any).ClientId,
         recipientRole: "client",
         type: "order_confirmed",
         title: "Pedido Confirmado",
