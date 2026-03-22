@@ -88,7 +88,7 @@ export const ProductGrid = () => {
             <p className="text-slate-400 font-bold">No se encontraron productos</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full pb-28">
             {filteredProducts.map((product) => {
               const isSelected = items.some((item) => item.id === product.id);
               return (
@@ -117,8 +117,8 @@ export const ProductGrid = () => {
                   </div>
 
                   {/* Info Area */}
-                  <div className="flex-grow min-w-0">
-                    <div className="flex justify-between items-start gap-2 mb-0.5">
+                  <div className="flex-grow min-w-0 overflow-hidden">
+                    <div className="flex items-start justify-between gap-1 mb-0.5">
                       <span className="text-[8px] font-black text-sky-600 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded-md border border-sky-100 truncate">
                         {product.category}
                       </span>
@@ -129,7 +129,7 @@ export const ProductGrid = () => {
                     <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-sky-600 transition-colors">
                       {product.name}
                     </h3>
-                    <div className="mt-1 flex items-center justify-between">
+                    <div className="mt-1 flex items-center justify-between gap-1 flex-wrap">
                       <span className={cn(
                         "text-[10px] font-bold",
                         product.stock <= 5 ? "text-orange-500" : "text-slate-400"
