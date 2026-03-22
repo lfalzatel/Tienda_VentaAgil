@@ -49,7 +49,7 @@ export const ProductGrid = () => {
     });
 
   return (
-    <div className="flex flex-col h-full space-y-3">
+    <div className="flex flex-col w-full space-y-3">
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow group">
@@ -88,7 +88,7 @@ export const ProductGrid = () => {
             <p className="text-slate-400 font-bold">No se encontraron productos</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full">
             {filteredProducts.map((product) => {
               const isSelected = items.some((item) => item.id === product.id);
               return (
@@ -96,13 +96,13 @@ export const ProductGrid = () => {
                   key={product.id}
                   onClick={() => !isSelected && product.stock > 0 && addItem({ ...product, quantity: 1 })}
                   className={cn(
-                    "group relative flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-0.5 text-left active:scale-[0.98]",
+                    "group relative flex items-center gap-3 p-3 sm:p-4 bg-white rounded-3xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-0.5 text-left active:scale-[0.98]",
                     product.stock > 0 ? "cursor-pointer" : "opacity-60 grayscale cursor-not-allowed",
                     isSelected && "bg-sky-50 border-sky-200 ring-2 ring-sky-500/20"
                   )}
                 >
                   {/* Circular Image Area */}
-                  <div className="flex-shrink-0 w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden relative border-2 border-white shadow-sm transition-transform duration-500 group-hover:scale-110">
+                  <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden relative border-2 border-white shadow-sm transition-transform duration-500 group-hover:scale-110">
                     {product.image ? (
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
@@ -122,7 +122,7 @@ export const ProductGrid = () => {
                       <span className="text-[8px] font-black text-sky-600 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded-md border border-sky-100 truncate">
                         {product.category}
                       </span>
-                      <span className="text-xs font-black text-slate-900 whitespace-nowrap">
+                      <span className="text-xs font-black text-slate-900 shrink-0">
                         ${product.price.toLocaleString("es-CO")}
                       </span>
                     </div>

@@ -90,7 +90,7 @@ export default function POSPage() {
               </button>
             </div>
             
-            <div className="relative">
+            <div className="w-full min-w-0">
               <ProductGrid />
             </div>
           </div>
