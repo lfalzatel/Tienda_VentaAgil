@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useCartStore } from "@/store/useCartStore";
 import { Search, Plus, Package } from "lucide-react";
@@ -25,7 +25,6 @@ export const ProductGrid = () => {
   const items = tabs.find(t => t.id === activeTabId)?.items || [];
 
   useEffect(() => {
-    // Escuchar cambios en la colección de productos
     const q = query(collection(db, "products"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const docs = snapshot.docs.map((doc) => ({
@@ -49,7 +48,7 @@ export const ProductGrid = () => {
     });
 
   return (
-    <div className="flex flex-col h-full space-y-3">
+    <div className="flex flex-col h-full space-y-3 max-w-full overflow-x-hidden">
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow group">
@@ -108,7 +107,6 @@ export const ProductGrid = () => {
                     ) : (
                       <Package className="text-slate-300" size={24} />
                     )}
-                    
                     {product.stock <= 5 && product.stock > 0 && (
                       <div className="absolute inset-0 bg-orange-500/10 flex items-center justify-center">
                         <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
@@ -136,7 +134,7 @@ export const ProductGrid = () => {
                       )}>
                         Stock: {product.stock}
                       </span>
-                      
+
                       {isSelected ? (
                         <div className="flex items-center gap-2 bg-sky-500 text-white p-1 rounded-2xl shadow-lg animate-in zoom-in duration-300">
                           <button
