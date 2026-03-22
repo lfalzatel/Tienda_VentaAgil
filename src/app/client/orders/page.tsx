@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { db, storage } from "@/lib/firebase/config";
-import { collection, query, where, getDocs, doc, onSnapshot, orderBy, serverTimestamp, addDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, onSnapshot, orderBy, serverTimestamp, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Loader2, Search, Plus, X, MessageCircle, ShoppingBag, CheckCircle2, XCircle, Clock, Camera, Send, ImageIcon, ChevronLeft, Calendar, Banknote, CreditCard, Smartphone, MapPin } from "lucide-react";
+import { Loader2, Search, Plus, X, MessageCircle, ShoppingBag, CheckCircle2, XCircle, Clock, Camera, Send, ImageIcon, ChevronLeft, Calendar, Banknote, CreditCard, Smartphone, MapPin, Pencil } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
@@ -33,12 +33,23 @@ export type Order = {
   status: "pending" | "confirmed" | "rejected";
   items: OrderItem[];
   note: string;
+  address: string;
   imageUrl: string;
   total: number;
   paymentMethod: string;
   location: { lat: number; lng: number } | null;
   createdAt: any;
 };
+
+type OrderForm = {
+  items: OrderItem[];
+  note: string;
+  address: string;
+  paymentMethod: string;
+  location: { lat: number; lng: number; address?: string } | null;
+};
+
+const EMPTY_FORM: OrderForm = { items: [], note: "", address: "", paymentMethod: "Cash", location: null };
 
 export type Message = {
   id: string;
@@ -54,16 +65,15 @@ export default function ClientOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // New Order Modal State
+  // New / Edit Order Modal State
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState<OrderItem[]>([]);
-  const [note, setNote] = useState("");
+  const [orderForm, setOrderForm] = useState<OrderForm>(EMPTY_FORM);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("Cash");
-  const [location, setLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -137,16 +147,41 @@ export default function ClientOrdersPage() {
 
   const handleOpenNewOrder = () => {
     loadProducts();
-    setCart([]);
-    setNote("");
+    setOrderForm(EMPTY_FORM);
+    setEditingOrder(null);
     setImage(null);
     setImagePreview(null);
     setSearchQuery("");
-    setPaymentMethod("Cash");
-    setLocation(null);
+    setSubmitAttempted(false);
     setIsLocating(false);
     setIsNewOrderOpen(true);
   };
+
+  const handleCloseModal = () => {
+    setIsNewOrderOpen(false);
+    setEditingOrder(null);
+    setSubmitAttempted(false);
+    setOrderForm(EMPTY_FORM);
+    setImage(null);
+    setImagePreview(null);
+  };
+
+  // Populate form when entering edit mode
+  useEffect(() => {
+    if (editingOrder) {
+      loadProducts();
+      setOrderForm({
+        items: editingOrder.items,
+        note: editingOrder.note || "",
+        address: editingOrder.address || "",
+        paymentMethod: editingOrder.paymentMethod || "Cash",
+        location: editingOrder.location || null,
+      });
+      setSubmitAttempted(false);
+      setSearchQuery("");
+      setIsNewOrderOpen(true);
+    }
+  }, [editingOrder]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -157,17 +192,17 @@ export default function ClientOrdersPage() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        let address = "Ubicación compartida";
+        let addr = "Ubicación compartida";
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.display_name) address = data.display_name;
+            if (data.display_name) addr = data.display_name;
           }
         } catch (e) {
           console.log("No se pudo obtener la dirección", e);
         }
-        setLocation({ lat: latitude, lng: longitude, address });
+        setOrderForm(prev => ({ ...prev, location: { lat: latitude, lng: longitude, address: addr } }));
         setIsLocating(false);
       },
       (err) => {
@@ -182,30 +217,31 @@ export default function ClientOrdersPage() {
   };
 
   const handleAddToCart = (prd: Product) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.productId === prd.id);
+    setOrderForm(prev => {
+      const existing = prev.items.find(i => i.productId === prd.id);
       if (existing) {
-        return prev.map(i => i.productId === prd.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return { ...prev, items: prev.items.map(i => i.productId === prd.id ? { ...i, quantity: i.quantity + 1 } : i) };
       } else {
-        return [...prev, { productId: prd.id, name: prd.name, price: prd.price, quantity: 1 }];
+        return { ...prev, items: [...prev.items, { productId: prd.id, name: prd.name, price: prd.price, quantity: 1 }] };
       }
     });
   };
 
   const handleUpdateQuantity = (productId: string, delta: number) => {
-    setCart(prev => prev.map(i => {
-      if (i.productId === productId) {
-        const newQ = i.quantity + delta;
-        return newQ > 0 ? { ...i, quantity: newQ } : i;
-      }
-      return i;
-    }).filter(i => i.quantity > 0)); 
-    // Wait, filter doesn't remove the item if delta tries to reduce it to 0, it removes all zeroes.
-    // If delta reduces it completely, let's just let it filter.
+    setOrderForm(prev => ({
+      ...prev,
+      items: prev.items.map(i => {
+        if (i.productId === productId) {
+          const newQ = i.quantity + delta;
+          return newQ > 0 ? { ...i, quantity: newQ } : i;
+        }
+        return i;
+      }).filter(i => i.quantity > 0)
+    }));
   };
 
   const handleRemoveFromCart = (productId: string) => {
-    setCart(prev => prev.filter(i => i.productId !== productId));
+    setOrderForm(prev => ({ ...prev, items: prev.items.filter(i => i.productId !== productId) }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,51 +256,61 @@ export default function ClientOrdersPage() {
     }
   };
 
-  const handleSubmitOrder = async () => {
-    if (!user?.uid || cart.length === 0 || !paymentMethod) return;
+  const handleSaveOrder = async () => {
+    setSubmitAttempted(true);
+    if (!user?.uid || orderForm.items.length === 0 || !orderForm.address.trim()) return;
     setIsSubmitting(true);
 
     try {
-      let imageUrl = "";
-      if (image) {
-        const imageRef = ref(storage, `orders/${user.uid}/${uuidv4()}_${image.name}`);
-        await uploadBytes(imageRef, image);
-        imageUrl = await getDownloadURL(imageRef);
+      const total = orderForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+      if (editingOrder) {
+        // EDIT existing pending order
+        await updateDoc(doc(db, "orders", editingOrder.id), {
+          items: orderForm.items,
+          note: orderForm.note,
+          address: orderForm.address,
+          paymentMethod: orderForm.paymentMethod,
+          location: orderForm.location ? { lat: orderForm.location.lat, lng: orderForm.location.lng } : null,
+          total,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        // CREATE new order
+        let imageUrl = "";
+        if (image) {
+          const imageRef = ref(storage, `orders/${user.uid}/${uuidv4()}_${image.name}`);
+          await uploadBytes(imageRef, image);
+          imageUrl = await getDownloadURL(imageRef);
+        }
+
+        await addDoc(collection(db, "orders"), {
+          clientId: user.uid,
+          clientName: user.name || "Cliente",
+          debtorId: user.cedula || undefined,
+          status: "pending",
+          items: orderForm.items,
+          total,
+          note: orderForm.note,
+          address: orderForm.address,
+          imageUrl,
+          paymentMethod: orderForm.paymentMethod,
+          location: orderForm.location ? { lat: orderForm.location.lat, lng: orderForm.location.lng } : null,
+          createdAt: serverTimestamp()
+        });
+
+        // Notificar admins via FCM (solo al crear)
+        fetch("/api/notify-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clientName: user.name || "Cliente", total })
+        }).catch(err => console.error("Error trigger push notify:", err));
       }
 
-      const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-      
-      const newOrder: Omit<Order, "id"> = {
-        clientId: user.uid,
-        clientName: user.name || "Cliente",
-        debtorId: user.cedula || undefined, // vinculación para admin si se va a crédito
-        status: "pending",
-        items: cart,
-        total,
-        note,
-        imageUrl,
-        paymentMethod,
-        location: location ? { lat: location.lat, lng: location.lng } : null,
-        createdAt: serverTimestamp()
-      };
-
-      await addDoc(collection(db, "orders"), newOrder);
-      
-      // Llamar al API route para notificar a los admins (FCM)
-      fetch("/api/notify-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientName: user.name || "Cliente",
-          total
-        })
-      }).catch(err => console.error("Error trigger push notify:", err));
-      
-      setIsNewOrderOpen(false);
-      // Reset form handled at handleOpenNewOrder
+      handleCloseModal();
     } catch (e) {
-      console.error("Error submitting order:", e);
-      alert("Hubo un error al enviar el pedido.");
+      console.error("Error al guardar pedido:", e);
+      alert("Hubo un error al guardar el pedido.");
     } finally {
       setIsSubmitting(false);
     }
@@ -299,7 +345,7 @@ export default function ClientOrdersPage() {
   };
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const cartTotal = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+  const cartTotal = orderForm.items.reduce((acc, i) => acc + (i.price * i.quantity), 0);
 
   if (!user) return null;
 
@@ -372,7 +418,7 @@ export default function ClientOrdersPage() {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 text-sm font-medium text-slate-500 border-t border-slate-50 pt-4">
+                    <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500 border-t border-slate-50 pt-4">
                         <span>{order.items.reduce((acc, i) => acc + i.quantity, 0)} items</span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
@@ -385,6 +431,19 @@ export default function ClientOrdersPage() {
                                     <ImageIcon size={14} className="text-blue-500"/> Imagen adjunta
                                 </span>
                             </>
+                        )}
+                        {/* Botón Editar — solo para pedidos pendientes */}
+                        {order.status === "pending" && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingOrder(order);
+                                }}
+                                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-black text-amber-600 bg-amber-50 border border-amber-100 rounded-xl hover:bg-amber-100 transition-all"
+                            >
+                                <Pencil size={12} />
+                                Editar
+                            </button>
                         )}
                     </div>
                 </div>
@@ -400,11 +459,11 @@ export default function ClientOrdersPage() {
             <div className="bg-white w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10 shrink-0">
                     <div>
-                        <h2 className="text-xl font-black text-slate-900 tracking-tight">Crear Nuevo Pedido</h2>
-                        <p className="text-xs font-medium text-slate-500 mt-1">Elige productos y envía tu solicitud.</p>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">{editingOrder ? "Editar Pedido" : "Nuevo Pedido"}</h2>
+                        <p className="text-xs font-medium text-slate-500 mt-1">{editingOrder ? `Modificando pedido #${editingOrder.id.slice(-6).toUpperCase()}` : "Elige productos y envía tu solicitud."}</p>
                     </div>
                     <button 
-                        onClick={() => setIsNewOrderOpen(false)}
+                        onClick={handleCloseModal}
                         className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                         disabled={isSubmitting}
                     >
@@ -426,7 +485,7 @@ export default function ClientOrdersPage() {
                             />
                         </div>
 
-                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 max-h-[250px] overflow-y-auto space-y-2">
+                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 max-h-[200px] overflow-y-auto space-y-2">
                             {filteredProducts.length === 0 ? (
                                 <p className="text-center text-sm font-medium text-slate-400 py-6">No se encontraron productos.</p>
                             ) : (
@@ -449,11 +508,11 @@ export default function ClientOrdersPage() {
                     </div>
 
                     {/* Lista de productos seleccionados */}
-                    {cart.length > 0 && (
+                    {orderForm.items.length > 0 && (
                         <div className="space-y-4 border-t border-slate-100 pt-6">
                             <h3 className="text-sm font-black tracking-widest text-slate-400 uppercase">Productos seleccionados</h3>
                             <div className="space-y-3">
-                                {cart.map(item => (
+                                {orderForm.items.map(item => (
                                     <div key={item.productId} className="flex items-center justify-between">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-black text-slate-900">{item.name}</span>
@@ -482,26 +541,49 @@ export default function ClientOrdersPage() {
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-500">Nota para el pedido <span className="text-slate-300">(Opcional)</span></label>
                             <textarea
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-slate-900 text-sm min-h-[100px] resize-none"
-                                placeholder="Escribe aquí si tienes instrucciones especiales..."
+                                value={orderForm.note}
+                                onChange={(e) => setOrderForm(prev => ({ ...prev, note: e.target.value }))}
+                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-slate-900 text-sm min-h-[80px] resize-none"
+                                placeholder="Instrucciones especiales..."
                             />
                         </div>
 
-                        {/* Botón de ubicación */}
+                        {/* Dirección de entrega (obligatoria) */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Dirección de entrega <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative group">
+                                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={orderForm.address}
+                                    onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                                    placeholder="Ej: Calle 45 #12-30, Barrio Centro"
+                                    className={cn(
+                                        "w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm",
+                                        submitAttempted && !orderForm.address.trim() ? "border-red-400 bg-red-50" : "border-slate-200"
+                                    )}
+                                />
+                            </div>
+                            {submitAttempted && !orderForm.address.trim() && (
+                                <p className="text-xs text-red-500 font-bold mt-1 px-1">La dirección es obligatoria para continuar.</p>
+                            )}
+                        </div>
+
+                        {/* Botón de ubicación GPS (complemento opcional) */}
                         <div>
-                            {location ? (
+                            {orderForm.location ? (
                                 <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
                                     <div className="flex items-center gap-3 overflow-hidden">
                                         <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg shrink-0">
                                             <MapPin size={18} />
                                         </div>
                                         <p className="text-sm font-bold text-emerald-800 line-clamp-2">
-                                            {location.address || `Lat: ${location.lat.toFixed(4)}, Lng: ${location.lng.toFixed(4)}`}
+                                            {orderForm.location.address || `Lat: ${orderForm.location.lat.toFixed(4)}, Lng: ${orderForm.location.lng.toFixed(4)}`}
                                         </p>
                                     </div>
-                                    <button onClick={() => setLocation(null)} className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors shrink-0">
+                                    <button onClick={() => setOrderForm(prev => ({ ...prev, location: null }))} className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors shrink-0">
                                         <X size={16} />
                                     </button>
                                 </div>
@@ -512,7 +594,7 @@ export default function ClientOrdersPage() {
                                     className="w-full flex items-center justify-center gap-2 p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors disabled:opacity-50"
                                 >
                                     {isLocating ? <Loader2 size={18} className="animate-spin" /> : <MapPin size={18} />}
-                                    {isLocating ? "Obteniendo ubicación..." : "Compartir mi ubicación"}
+                                    {isLocating ? "Obteniendo ubicación GPS..." : "Compartir mi ubicación GPS (opcional)"}
                                 </button>
                             )}
                         </div>
@@ -557,11 +639,11 @@ export default function ClientOrdersPage() {
                                 { id: "Credit", label: "A crédito", icon: Clock },
                             ].map(method => {
                                 const Icon = method.icon;
-                                const isActive = paymentMethod === method.id;
+                                const isActive = orderForm.paymentMethod === method.id;
                                 return (
                                     <button
                                         key={method.id}
-                                        onClick={() => setPaymentMethod(method.id)}
+                                        onClick={() => setOrderForm(prev => ({ ...prev, paymentMethod: method.id }))}
                                         className={cn(
                                             "flex flex-col items-center justify-center p-3 gap-2 border rounded-xl font-bold text-xs transition-all",
                                             isActive 
@@ -578,7 +660,7 @@ export default function ClientOrdersPage() {
                     </div>
 
                     {/* Resumen del pedido */}
-                    {cart.length > 0 && (
+                    {orderForm.items.length > 0 && (
                         <div className="space-y-4 border-t border-slate-100 pt-6 mb-4">
                             <h3 className="text-sm font-black tracking-widest text-slate-400 uppercase">Resumen del pedido</h3>
                             <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100">
@@ -589,14 +671,14 @@ export default function ClientOrdersPage() {
                     )}
                 </div>
 
-                {/* Botón Enviar Pedido Fijo */}
+                {/* Botón Enviar/Guardar — Fijo */}
                 <div className="p-5 pt-4 border-t border-slate-100 bg-white shrink-0">
                     <button
-                        onClick={handleSubmitOrder}
-                        disabled={isSubmitting || cart.length === 0 || !paymentMethod}
+                        onClick={handleSaveOrder}
+                        disabled={isSubmitting || orderForm.items.length === 0 || !orderForm.address.trim()}
                         className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex justify-center items-center gap-2"
                     >
-                        {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Confirmar Pedido"}
+                        {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : editingOrder ? "Guardar cambios" : "Enviar Pedido"}
                     </button>
                 </div>
             </div>

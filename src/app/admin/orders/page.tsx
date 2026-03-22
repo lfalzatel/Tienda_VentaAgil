@@ -24,6 +24,7 @@ export type Order = {
   status: "pending" | "confirmed" | "rejected";
   items: OrderItem[];
   note: string;
+  address?: string;
   imageUrl: string;
   total: number;
   paymentMethod?: string;
@@ -391,6 +392,29 @@ export default function AdminOrdersPage() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 border-t border-slate-50 pt-2 shrink-0">
+                                {/* Dirección de entrega */}
+                                {selectedOrder.address && (
+                                    <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                        <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">Dirección de entrega</p>
+                                        <div className="flex items-start gap-2">
+                                            <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700">{selectedOrder.address}</p>
+                                                {selectedOrder.location && (
+                                                    <a 
+                                                        href={`https://www.google.com/maps?q=${selectedOrder.location.lat},${selectedOrder.location.lng}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs text-emerald-600 font-bold hover:underline mt-1 flex items-center gap-1"
+                                                    >
+                                                        <MapPin size={10} /> Ver en Google Maps
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {selectedOrder.paymentMethod && (
                                     <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                                         <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">Método de Pago</p>
@@ -408,9 +432,9 @@ export default function AdminOrdersPage() {
                                     </div>
                                 )}
                                 
-                                {selectedOrder.location && (
+                                {selectedOrder.location && !selectedOrder.address && (
                                     <div className="flex-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">Ubicación</p>
+                                        <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">Ubicación GPS</p>
                                         <a 
                                             href={`https://maps.google.com/?q=${selectedOrder.location.lat},${selectedOrder.location.lng}`} 
                                             target="_blank" 
