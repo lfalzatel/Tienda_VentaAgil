@@ -33,7 +33,6 @@ export const ProductGrid = () => {
       }));
       setProducts(docs);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -48,10 +47,10 @@ export const ProductGrid = () => {
     });
 
   return (
-    <div className="flex flex-col h-full space-y-3 max-w-full overflow-x-hidden">
+    <div className="flex flex-col w-full space-y-3 overflow-x-hidden">
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow group">
+        <div className="relative flex-grow group min-w-0">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={18} />
           <input
             type="text"
@@ -61,7 +60,7 @@ export const ProductGrid = () => {
             className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300 shadow-sm"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide shrink-0">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -80,14 +79,14 @@ export const ProductGrid = () => {
       </div>
 
       {/* Grid */}
-      <div>
+      <div className="w-full min-w-0">
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
             <Package className="text-slate-200 mb-4" size={48} />
             <p className="text-slate-400 font-bold">No se encontraron productos</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-28">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-28 w-full">
             {filteredProducts.map((product) => {
               const isSelected = items.some((item) => item.id === product.id);
               return (
@@ -95,7 +94,7 @@ export const ProductGrid = () => {
                   key={product.id}
                   onClick={() => !isSelected && product.stock > 0 && addItem({ ...product, quantity: 1 })}
                   className={cn(
-                    "group relative flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-0.5 text-left active:scale-[0.98]",
+                    "group relative flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-0.5 text-left active:scale-[0.98] w-full min-w-0",
                     product.stock > 0 ? "cursor-pointer" : "opacity-60 grayscale cursor-not-allowed",
                     isSelected && "bg-sky-50 border-sky-200 ring-2 ring-sky-500/20"
                   )}
@@ -115,28 +114,28 @@ export const ProductGrid = () => {
                   </div>
 
                   {/* Info Area */}
-                  <div className="flex-grow min-w-0">
+                  <div className="flex-grow min-w-0 overflow-hidden">
                     <div className="flex justify-between items-start gap-2 mb-0.5">
-                      <span className="text-[8px] font-black text-sky-600 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded-md border border-sky-100 truncate">
+                      <span className="text-[8px] font-black text-sky-600 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded-md border border-sky-100 truncate max-w-[60%]">
                         {product.category}
                       </span>
-                      <span className="text-xs font-black text-slate-900 whitespace-nowrap">
+                      <span className="text-xs font-black text-slate-900 whitespace-nowrap shrink-0">
                         ${product.price.toLocaleString("es-CO")}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-sky-600 transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-sky-600 transition-colors">
                       {product.name}
                     </h3>
-                    <div className="mt-1 flex items-center justify-between">
+                    <div className="mt-1 flex items-center justify-between gap-2">
                       <span className={cn(
-                        "text-[10px] font-bold",
+                        "text-[10px] font-bold shrink-0",
                         product.stock <= 5 ? "text-orange-500" : "text-slate-400"
                       )}>
                         Stock: {product.stock}
                       </span>
 
                       {isSelected ? (
-                        <div className="flex items-center gap-2 bg-sky-500 text-white p-1 rounded-2xl shadow-lg animate-in zoom-in duration-300">
+                        <div className="flex items-center gap-1 bg-sky-500 text-white p-1 rounded-2xl shadow-lg animate-in zoom-in duration-300 shrink-0">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -151,9 +150,9 @@ export const ProductGrid = () => {
                             }}
                             className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded-xl transition-colors"
                           >
-                            <span className="text-lg font-bold">−</span>
+                            <span className="text-lg font-bold leading-none">−</span>
                           </button>
-                          <span className="text-xs font-black min-w-[12px] text-center">
+                          <span className="text-xs font-black min-w-[14px] text-center">
                             {items.find(i => i.id === product.id)?.quantity || 0}
                           </span>
                           <button
@@ -167,7 +166,7 @@ export const ProductGrid = () => {
                           </button>
                         </div>
                       ) : (
-                        <div className="bg-slate-100 text-slate-400 p-2 rounded-xl group-hover:bg-sky-500 group-hover:text-white transition-all shadow-sm">
+                        <div className="bg-slate-100 text-slate-400 p-2 rounded-xl group-hover:bg-sky-500 group-hover:text-white transition-all shadow-sm shrink-0">
                           <Plus size={14} strokeWidth={3} />
                         </div>
                       )}
