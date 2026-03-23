@@ -137,7 +137,8 @@ export default function AdminOrdersPage() {
         sellerId: user?.uid || "system",
         sellerName: user?.name || "Admin",
         clientId: selectedOrder.clientId || (selectedOrder as any).ClientId,
-        clientName: selectedOrder.clientName
+        clientName: selectedOrder.clientName,
+        orderId: selectedOrder.id
       });
 
       // 3. Crear el gasto en personal_expenses

@@ -24,7 +24,7 @@ const BottomNavContent = () => {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
 
-  if (!user) return null;
+  if (!user || pathname === "/login") return null;
 
   type NavItem = {
     label: string;

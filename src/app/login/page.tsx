@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase/config";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, googleProvider, db } from "@/lib/firebase/config";
 import { useRouter } from "next/navigation";
 import { Skull, Eye, EyeOff, Mail, Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -79,8 +80,15 @@ export default function LoginPage() {
       });
 
       sessionStorage.setItem("fb_rt", data.refresh_token);
-      router.push("/pos");
-    } catch {
+
+      // Get role for correct redirection
+      const userDoc = await getDoc(doc(db, "users", data.user_id || ""));
+      const userData = userDoc.data();
+      const role = userData?.role || "client";
+      
+      window.location.href = role === "client" ? "/client/history" : "/pos";
+    } catch (err) {
+      console.error(err);
       setError("Error al autenticar con biometría. Intenta con contraseña.");
     } finally {
       setBiometricLoading(false);
@@ -103,15 +111,18 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       });
 
+      // Obtener rol para redirección correcta
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      const role = userDoc.data()?.role || "client";
+      const redirectPath = role === "client" ? "/client/history" : "/pos";
+
       const available = await isBiometricAvailable();
       if (available && !hasBiometricRegistered()) {
         sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
         setShowBiometricPrompt(true);
-      } else if (available && hasBiometricRegistered()) {
-        sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
-        router.push("/pos");
       } else {
-        router.push("/pos");
+        if (available) sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
+        window.location.href = redirectPath;
       }
     } catch (err: any) {
       console.error(err);
@@ -134,15 +145,18 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       });
 
+      // Obtener rol para redirección correcta
+      const userDoc = await getDoc(doc(db, "users", result.user.uid));
+      const role = userDoc.data()?.role || "client";
+      const redirectPath = role === "client" ? "/client/history" : "/pos";
+
       const available = await isBiometricAvailable();
       if (available && !hasBiometricRegistered()) {
         sessionStorage.setItem("fb_rt", result.user.refreshToken);
         setShowBiometricPrompt(true);
-      } else if (available && hasBiometricRegistered()) {
-        sessionStorage.setItem("fb_rt", result.user.refreshToken);
-        router.push("/pos");
       } else {
-        router.push("/pos");
+        if (available) sessionStorage.setItem("fb_rt", result.user.refreshToken);
+        window.location.href = redirectPath;
       }
     } catch (err: any) {
       console.error(err);
@@ -162,7 +176,7 @@ export default function LoginPage() {
       </div>
 
       {showBiometricPrompt && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
@@ -180,14 +194,21 @@ export default function LoginPage() {
                   if (registered) {
                     setBiometricRegistered(true);
                   }
-                  router.push("/pos");
+                  // Determine redirect based on user role (using auth state or current path logic)
+                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+                  const role = userDoc.data()?.role || "client";
+                  window.location.href = role === "client" ? "/client/history" : "/pos";
                 }}
                 className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98]"
               >
                 Activar biometría
               </button>
               <button
-                onClick={() => router.push("/pos")}
+                onClick={async () => {
+                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+                  const role = userDoc.data()?.role || "client";
+                  window.location.href = role === "client" ? "/client/history" : "/pos";
+                }}
                 className="w-full py-3 text-slate-400 text-sm font-bold hover:text-slate-600 transition-colors"
               >
                 Ahora no

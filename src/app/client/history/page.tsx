@@ -25,6 +25,7 @@ interface Transaction {
   date: any;
   description?: string;
   saleId?: string;
+  orderId?: string;
   paymentMethod?: string;
   status?: string;
   items?: any[];
@@ -127,6 +128,7 @@ export default function ClientHistoryPage() {
               amount: data.total,
               date: data.createdAt,
               saleId: doc.id,
+              orderId: data.orderId,
               paymentMethod: data.paymentMethod,
               items: data.items
             };
@@ -143,6 +145,7 @@ export default function ClientHistoryPage() {
               amount: data.amount,
               date: data.date,
               saleId: data.saleId,
+              orderId: data.orderId,
               description: data.description,
               paymentMethod: data.type === "sale" ? "credit" : undefined
             };
@@ -158,6 +161,7 @@ export default function ClientHistoryPage() {
               const data = d.data();
               return {
                 id: d.id,
+                orderId: d.id,
                 type: "order" as const,
                 amount: data.total || 0,
                 date: data.confirmedAt || data.createdAt,
@@ -755,12 +759,17 @@ export default function ClientHistoryPage() {
                           <p className="text-sm font-black text-slate-900">
                             {tr.type === "order" ? "Pedido Confirmado" : tr.type === "sale" ? "Nueva Compra" : "Pago Realizado"}
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <Calendar size={10} />
-                            {tr.date?.seconds 
-                              ? new Date(tr.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'short', year: 'numeric' }) 
-                              : 'Reciente'}
-                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5">
+                              <Calendar size={10} />
+                              {tr.date?.seconds 
+                                ? new Date(tr.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'short', year: 'numeric' }) 
+                                : 'Reciente'}
+                            </p>
+                            <span className="text-[9px] font-black text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                              #{(tr.orderId || tr.id).slice(-6).toUpperCase()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="text-right flex flex-col items-end shrink-0 pl-2">
@@ -840,14 +849,20 @@ export default function ClientHistoryPage() {
                       key={expense.id}
                       onClick={() => {
                         if (expense.category === 'Pedido' || expense.items) {
+                          // Buscar el pedido correspondiente en las transacciones para obtener items actualizados
+                          const matchingOrder = transactions.find(t => 
+                            (t.type === 'order' || t.type === 'sale') && 
+                            (t.id === expense.orderId || t.saleId === expense.orderId)
+                          );
+
                           setSelectedTransaction({
                             id: expense.orderId || expense.id,
                             type: 'order',
                             amount: expense.amount,
                             date: expense.date,
                             description: expense.description,
-                            items: expense.items || [],
-                            paymentMethod: expense.paymentMethod || (expense.category === 'Pedido' ? 'Credit' : 'Cash')
+                            items: (expense.items && expense.items.length > 0) ? expense.items : (matchingOrder?.items || []),
+                            paymentMethod: expense.paymentMethod || matchingOrder?.paymentMethod || (expense.category === 'Pedido' ? 'Credit' : 'Cash')
                           });
                           setIsDetailsOpen(true);
                         }
@@ -863,7 +878,9 @@ export default function ClientHistoryPage() {
                         </div>
                         <div className="flex-grow min-w-0 pr-4">
                           <h4 className="font-black text-slate-900 text-sm sm:text-base truncate">
-                            {expense.title || expense.category}
+                            {expense.category === 'Pedido' && expense.orderId 
+                              ? `Pedido #${expense.orderId.slice(-6).toUpperCase()}` 
+                              : (expense.title || expense.category)}
                           </h4>
                           <div className="flex items-center gap-2 mt-1">
                             {expense.category === 'Deudas' && expense.personName && (
@@ -1094,9 +1111,13 @@ export default function ClientHistoryPage() {
       )}
 
       {/* Transaction Detail Modal */}
-      {isDetailsOpen && selectedTransaction && (
-        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md sm:p-6 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500">
+      {isDetailsOpen && selectedTransaction && (() => {
+        const extractedOrderId = selectedTransaction.orderId || (selectedTransaction.description?.match(/Pedido #([A-Z0-9]+)/)?.[1]);
+        const displayId = extractedOrderId || selectedTransaction.id;
+
+        return (
+          <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md sm:p-6 animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500">
             {/* Header */}
             <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
               <div className="flex items-center gap-4">
@@ -1110,11 +1131,16 @@ export default function ClientHistoryPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">Detalle del Movimiento</h2>
-                  <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
-                    {selectedTransaction.type === 'order' ? 'Pedido Confirmado' : 
-                     selectedTransaction.type === 'sale' ? 'Compra Realizada' : 
-                     'Abono a Deuda'}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      {selectedTransaction.type === 'order' ? 'Pedido Confirmado' : 
+                       selectedTransaction.type === 'sale' ? 'Compra Realizada' : 
+                       'Abono a Deuda'}
+                    </p>
+                    <span className="text-[10px] font-black text-slate-300 bg-slate-50 px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                      #{displayId.slice(-6).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button 
@@ -1197,7 +1223,8 @@ export default function ClientHistoryPage() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

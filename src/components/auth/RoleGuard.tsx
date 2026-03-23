@@ -24,7 +24,7 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
       } else if (!allowedRoles.includes(user.role)) {
         // Redirigir según el rol si no tiene acceso a esta ruta
         if (user.role === "client") {
-          router.replace("/client/dashboard");
+          router.replace("/client/history");
         } else {
           router.replace("/pos"); // Fallback a POS para admin/cashier si intentan ir a dashboard de client
         }
