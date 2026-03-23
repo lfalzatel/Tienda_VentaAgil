@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, onSnapshot, getDoc, getDocs, setDoc, updateDoc, doc, Timestamp, serverTimestamp, addDoc, deleteDoc } from "firebase/firestore";
 import { Header } from "@/components/layout/Header";
-import { Loader2, Calendar, ShoppingBag, ArrowUpRight, TrendingDown, Search, Download, UtensilsCrossed, HandCoins, Car, HeartPulse, Home, Receipt, Plus, X, Pencil, Trash2, CreditCard, Phone, Wallet } from "lucide-react";
+import { Loader2, Calendar, ShoppingBag, ArrowUpRight, TrendingDown, Search, Download, UtensilsCrossed, HandCoins, Car, HeartPulse, Home, Receipt, Plus, X, Pencil, Trash2, CreditCard, Phone, Wallet, Ban, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
@@ -27,6 +27,7 @@ interface Transaction {
   saleId?: string;
   paymentMethod?: string;
   status?: string;
+  items?: any[];
 }
 
 interface PersonalExpense {
@@ -38,6 +39,8 @@ interface PersonalExpense {
   description: string;
   personName?: string;
   date: Timestamp;
+  items?: any[];
+  orderId?: string;
 }
 
 export default function ClientHistoryPage() {
@@ -47,6 +50,10 @@ export default function ClientHistoryPage() {
   const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>([]);
   const [debtor, setDebtor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Modal Detail State
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,7 +126,8 @@ export default function ClientHistoryPage() {
               amount: data.total,
               date: data.createdAt,
               saleId: doc.id,
-              paymentMethod: data.paymentMethod
+              paymentMethod: data.paymentMethod,
+              items: data.items
             };
           });
           updateTransactionsState();
@@ -154,7 +162,8 @@ export default function ClientHistoryPage() {
                 date: data.confirmedAt || data.createdAt,
                 description: `Pedido #${d.id.slice(0, 6).toUpperCase()} — ${data.items?.length || 0} productos`,
                 paymentMethod: data.paymentMethod || "Cash",
-                status: "confirmed"
+                status: "confirmed",
+                items: data.items
               };
             });
             updateTransactionsState();
@@ -718,7 +727,11 @@ export default function ClientHistoryPage() {
                   filteredTransactions.map(tr => (
                     <div 
                       key={tr.id} 
-                      className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group"
+                      onClick={() => {
+                        setSelectedTransaction(tr);
+                        setIsDetailsOpen(true);
+                      }}
+                      className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group cursor-pointer"
                     >
                       <div className="flex items-center gap-4">
                         <div className={cn(
@@ -824,7 +837,23 @@ export default function ClientHistoryPage() {
                   filteredExpenses.map(expense => (
                     <div 
                       key={expense.id}
-                      className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] bg-slate-50/50 border border-slate-100 relative group overflow-hidden"
+                      onClick={() => {
+                        if (expense.category === 'Pedido' || expense.items) {
+                          setSelectedTransaction({
+                            id: expense.orderId || expense.id,
+                            type: 'order',
+                            amount: expense.amount,
+                            date: expense.date,
+                            description: expense.description,
+                            items: expense.items || []
+                          });
+                          setIsDetailsOpen(true);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center justify-between p-4 sm:p-5 rounded-[2rem] bg-slate-50/50 border border-slate-100 relative group overflow-hidden transition-all",
+                        (expense.category === 'Pedido' || expense.items) && "cursor-pointer hover:bg-slate-100/50 hover:border-slate-200 active:scale-[0.99]"
+                      )}
                     >
                       <div className="flex items-center gap-4 relative z-10 w-full">
                         <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-600 shrink-0">
@@ -852,18 +881,26 @@ export default function ClientHistoryPage() {
                             ${(expense.amount ?? 0).toLocaleString("es-CO")}
                           </p>
                           <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleEditExpense(expense); }}
-                              className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-emerald-600 rounded-lg border border-slate-100 transition-colors"
-                            >
-                              <Pencil size={12} />
-                            </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleDeleteExpense(expense.id, e); }}
-                              className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-rose-500 rounded-lg border border-slate-100 transition-colors"
-                            >
-                              <Trash2 size={12} />
-                            </button>
+                            {expense.category === 'Pedido' ? (
+                              <div className="px-2 py-1 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-100">
+                                <Ban size={10} /> Bloqueado
+                              </div>
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleEditExpense(expense); }}
+                                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-emerald-600 rounded-lg border border-slate-100 transition-colors"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteExpense(expense.id, e); }}
+                                  className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-rose-500 rounded-lg border border-slate-100 transition-colors"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1048,6 +1085,112 @@ export default function ClientHistoryPage() {
                 className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex justify-center items-center gap-2 disabled:opacity-50"
               >
                 {isSavingExpense ? <Loader2 size={18} className="animate-spin" /> : (editingExpenseId ? 'Guardar Cambios' : 'Registrar Gasto')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transaction Detail Modal */}
+      {isDetailsOpen && selectedTransaction && (
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md sm:p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500">
+            {/* Header */}
+            <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+                  selectedTransaction.type === 'order' ? "bg-violet-100 text-violet-600" :
+                  selectedTransaction.type === 'sale' ? (selectedTransaction.paymentMethod?.toLowerCase() === 'credit' ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600") :
+                  "bg-emerald-100 text-emerald-600"
+                )}>
+                  {selectedTransaction.type === 'payment' ? <TrendingDown size={24} /> : <ShoppingBag size={24} />}
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight">Detalle del Movimiento</h2>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
+                    {selectedTransaction.type === 'order' ? 'Pedido Confirmado' : 
+                     selectedTransaction.type === 'sale' ? 'Compra Realizada' : 
+                     'Abono a Deuda'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsDetailsOpen(false)}
+                className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
+              {/* Info General */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha</p>
+                  <p className="text-sm font-black text-slate-700">
+                    {selectedTransaction.date?.seconds 
+                      ? new Date(selectedTransaction.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'long', year: 'numeric' }) 
+                      : 'Reciente'}
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Método</p>
+                  <p className="text-sm font-black text-slate-700 capitalize">
+                    {selectedTransaction.paymentMethod === 'credit' ? 'Crédito' : 
+                     selectedTransaction.paymentMethod === 'Cash' ? 'Efectivo' : 
+                     selectedTransaction.paymentMethod === 'Card' ? 'Tarjeta' : 
+                     selectedTransaction.paymentMethod === 'Digital' ? 'Digital' : 
+                     selectedTransaction.paymentMethod || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Items / Description */}
+              <div>
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-50 pb-2">
+                  {selectedTransaction.items && selectedTransaction.items.length > 0 ? `Productos (${selectedTransaction.items.length})` : 'Información Adicional'}
+                </h3>
+                
+                {selectedTransaction.items && selectedTransaction.items.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedTransaction.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-sm bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs shrink-0">{item.quantity}</span>
+                          <span className="font-bold text-slate-700 truncate">{item.name}</span>
+                        </div>
+                        <span className="font-black text-slate-900 ml-4 shrink-0">${((item.price * item.quantity) || 0).toLocaleString("es-CO")}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 italic text-slate-500 text-sm font-medium">
+                    {selectedTransaction.description || "Sin descripción adicional."}
+                  </div>
+                )}
+              </div>
+
+              {/* Total Card */}
+              <div className="bg-slate-900 rounded-3xl p-6 text-white flex justify-between items-center shadow-xl shadow-slate-900/10">
+                <div>
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Monto Total</p>
+                  <p className="text-3xl font-black tracking-tighter mt-1">${(selectedTransaction.amount || 0).toLocaleString("es-CO")}</p>
+                </div>
+                <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                  <Wallet size={24} className="text-emerald-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button 
+                onClick={() => setIsDetailsOpen(false)}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all active:scale-[0.98]"
+              >
+                Cerrar Detalle
               </button>
             </div>
           </div>

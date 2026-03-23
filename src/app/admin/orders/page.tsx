@@ -148,7 +148,9 @@ export default function AdminOrdersPage() {
         category: "Pedido",
         description: selectedOrder.note || "Gasto generado automáticamente al confirmar pedido.",
         date: selectedOrder.createdAt || serverTimestamp(),
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        orderId: selectedOrder.id,
+        items: selectedOrder.items
       };
       await addDoc(collection(db, "personal_expenses"), expenseData);
 
