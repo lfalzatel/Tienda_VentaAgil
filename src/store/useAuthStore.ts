@@ -7,6 +7,7 @@ interface User {
   name?: string | null;
   photoURL?: string | null;
   cedula?: string | null;
+  phone?: string | null;
 }
 
 interface AuthStore {

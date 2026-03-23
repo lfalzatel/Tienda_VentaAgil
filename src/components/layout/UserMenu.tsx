@@ -21,8 +21,11 @@ import { usePWAStore } from "@/store/usePWAStore";
 import { cn } from "@/lib/utils";
 import { hasBiometricRegistered, removeBiometric } from "@/lib/utils/webauthn";
 
+import { ProfileModal } from "../profile/ProfileModal";
+
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBiometricRegistered, setIsBiometricRegistered] = useState(false);
   const { user } = useAuthStore();
   const { deferredPrompt, setDeferredPrompt } = usePWAStore();
@@ -168,7 +171,14 @@ export const UserMenu = () => {
             </div>
 
             <div className="space-y-1">
-              <MenuButton icon={<UserIcon size={18} />} label="Mi Perfil" onClick={() => setIsOpen(false)} />
+              <MenuButton 
+                icon={<UserIcon size={18} />} 
+                label="Mi Perfil" 
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsProfileOpen(true);
+                }} 
+              />
               
               {isBiometricRegistered ? (
                 <MenuButton 
@@ -219,6 +229,9 @@ export const UserMenu = () => {
             </div>
           </div>
         </div>
+      )}
+      {isProfileOpen && (
+        <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
       )}
     </div>
   );
