@@ -1,0 +1,10 @@
+{
+  "name": "scraper-la80",
+  "version": "1.0.0",
+  "description": "Scraper para Supermercados La 80",
+  "main": "scraper.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "playwright": "^1.40.0"
+  }
+}

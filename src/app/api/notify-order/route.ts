@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
           to: token,
           notification: {
             title: "🛍️ Nuevo pedido recibido",
-            body: `${clientName} realizó un pedido por $${total.toLocaleString("es-CO")}`
+            body: `${clientName} realizó un pedido por $${(total ?? 0).toLocaleString("es-CO")}`
           },
           data: { link: "/admin/orders" },
           android: { priority: "high" },

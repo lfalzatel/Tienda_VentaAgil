@@ -99,10 +99,10 @@ export function SaleDetailModal({ sale, isOpen, onClose }: SaleDetailModalProps)
               <div key={idx} className="flex justify-between gap-2 p-2 bg-white border border-slate-100 rounded-lg text-[10px]">
                 <div className="min-w-0">
                   <p className="font-black text-slate-900 truncate">{item.name}</p>
-                  <p className="text-[9px] text-slate-500">{item.quantity} x ${item.price.toLocaleString("es-CO")}</p>
+                  <p className="text-[9px] text-slate-500">{item.quantity} x ${(item.price ?? 0).toLocaleString("es-CO")}</p>
                 </div>
                 <p className="font-black text-slate-900 whitespace-nowrap">
-                  ${(item.price * item.quantity).toLocaleString("es-CO")}
+                  ${((item.price ?? 0) * item.quantity).toLocaleString("es-CO")}
                 </p>
               </div>
             ))}
@@ -115,7 +115,7 @@ export function SaleDetailModal({ sale, isOpen, onClose }: SaleDetailModalProps)
             <div>
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Total</p>
               <p className="text-xl font-black text-slate-900">
-                ${sale.total.toLocaleString("es-CO")}
+                ${(sale.total ?? 0).toLocaleString("es-CO")}
               </p>
             </div>
             <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-1">

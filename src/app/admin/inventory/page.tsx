@@ -175,7 +175,7 @@ export default function InventoryPage() {
                     ${(p.costPrice || 0).toLocaleString("es-CO")}
                   </td>
                   <td className="px-8 py-5 text-sm font-black text-slate-900">
-                    ${p.price.toLocaleString("es-CO")}
+                    ${(p.price ?? 0).toLocaleString("es-CO")}
                   </td>
                   <td className="px-8 py-5">
                     <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">

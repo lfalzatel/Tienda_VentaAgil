@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { 
   ShoppingCart,
+  ShoppingBag,
   LayoutDashboard,
   Users,
   Package,
@@ -41,7 +42,7 @@ const BottomNavContent = () => {
   ];
 
   const clientNavItems: NavItem[] = [
-    { label: "Resumen", path: "/client/dashboard", icon: Home, match: (p: string, t: string | null) => p === "/client/dashboard" && t !== "gastos" },
+    { label: "Comprar", path: "/client/purchases", icon: ShoppingBag },
     { label: "Historial", path: "/client/history", icon: History, match: (p: string, t: string | null) => p === "/client/history" },
     { label: "Pedidos", path: "/client/orders", icon: MessageCircle, match: (p: string, t: string | null) => p === "/client/orders" },
     { label: "Mi Código", path: "/client/qr", icon: QrCode, match: (p: string, t: string | null) => p === "/client/qr" },
@@ -77,7 +78,7 @@ const BottomNavContent = () => {
                   size={isActive ? 17 : 16}
                   strokeWidth={isActive ? 2.5 : 2}
                   className={cn(
-                    "transition-colors duration-300",
+                    "transition-all duration-300 group-hover:rotate-12 origin-top",
                     isActive ? "text-white" : "text-emerald-700/40 group-hover:text-emerald-500"
                   )}
                 />

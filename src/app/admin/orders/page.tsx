@@ -167,7 +167,7 @@ export default function AdminOrdersPage() {
         recipientRole: "client",
         type: "order_confirmed",
         title: "Pedido Confirmado",
-        body: `Tu pedido #${selectedOrder.id.slice(-6).toUpperCase()} por $${selectedOrder.total.toLocaleString("es-CO")} ha sido confirmado y está en preparación.`,
+        body: `Tu pedido #${selectedOrder.id.slice(-6).toUpperCase()} por $${(selectedOrder.total ?? 0).toLocaleString("es-CO")} ha sido confirmado y está en preparación.`,
         link: "/client/orders",
         read: false,
         createdAt: serverTimestamp()
@@ -381,13 +381,13 @@ export default function AdminOrdersPage() {
                                                 <span className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center font-black text-slate-600 text-xs">{item.quantity}</span>
                                                 <span className="font-bold text-slate-700">{item.name}</span>
                                             </div>
-                                            <span className="font-black text-slate-900">${(item.price * item.quantity).toLocaleString("es-CO")}</span>
+                                            <span className="font-black text-slate-900">${((item.price * item.quantity) ?? 0).toLocaleString("es-CO")}</span>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
                                     <span className="font-black text-slate-400 uppercase tracking-widest text-xs">Total</span>
-                                    <span className="text-2xl font-black text-emerald-600">${selectedOrder.total.toLocaleString("es-CO")}</span>
+                                    <span className="text-2xl font-black text-emerald-600">${(selectedOrder.total ?? 0).toLocaleString("es-CO")}</span>
                                 </div>
                             </div>
 

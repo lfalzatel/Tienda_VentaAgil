@@ -16,10 +16,13 @@ import { downloadPurchasesCSV } from "@/lib/utils/exportUtils";
 
 interface Purchase {
   id: string;
-  productId: string;
-  productName: string;
-  quantity: number;
-  costPrice: number;
+  items: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    costPrice: number;
+    total: number;
+  }[];
   total: number;
   createdAt: any;
 }
@@ -83,7 +86,8 @@ export default function PurchasesPage() {
       
       purchaseData.forEach(p => {
         total += p.total || 0;
-        items += p.quantity || 0;
+        const purchaseItemsCount = p.items?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0;
+        items += purchaseItemsCount;
         if (p.createdAt) {
           days.add(p.createdAt.toDate().toLocaleDateString());
         }
@@ -195,11 +199,15 @@ export default function PurchasesPage() {
                       <ShoppingBag size={20} />
                     </div>
                     <div>
-                      <p className="text-base font-black text-slate-900">${p.total.toLocaleString("es-CO")}</p>
+                      <p className="text-base font-black text-slate-900">$${(p.total ?? 0).toLocaleString("es-CO")}</p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="truncate max-w-[120px]">{p.productName}</span>
+                        <span className="truncate max-w-[120px]">
+                          {p.items?.length > 1 
+                            ? `${p.items[0].productName} +${p.items.length - 1}` 
+                            : p.items?.[0]?.productName || "Sin productos"}
+                        </span>
                         <span className="h-1 w-1 rounded-full bg-slate-200"></span>
-                        <span>{p.quantity} uds</span>
+                        <span>{p.items?.reduce((acc, item) => acc + item.quantity, 0) || 0} uds</span>
                       </p>
                     </div>
                   </div>

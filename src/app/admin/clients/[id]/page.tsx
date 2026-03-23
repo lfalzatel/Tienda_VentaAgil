@@ -151,7 +151,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                 </button>
                 {client.totalDebt > 0 ? (
                   <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-red-100">
-                    Debe ${client.totalDebt.toLocaleString("es-CO")}
+                    Debe ${(client.totalDebt ?? 0).toLocaleString("es-CO")}
                   </span>
                 ) : (
                   <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-emerald-100">
@@ -243,7 +243,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                           "text-lg font-black tracking-tighter",
                           tr.type === "sale" ? "text-slate-900" : "text-emerald-600"
                         )}>
-                          {tr.type === "sale" ? "+" : "-"}${tr.amount.toLocaleString("es-CO")}
+                          {tr.type === "sale" ? "+" : "-"}${(tr.amount ?? 0).toLocaleString("es-CO")}
                         </p>
                         {tr.paymentMethod && (
                           <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">

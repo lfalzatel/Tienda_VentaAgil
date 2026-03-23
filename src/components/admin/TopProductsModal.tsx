@@ -89,7 +89,7 @@ export function TopProductsModal({ isOpen, onClose, products, filterLabel }: Top
                   </td>
                   <td className="px-6 py-4 text-right">
                     <p className="text-sm font-black text-slate-900">
-                      ${product.revenue.toLocaleString("es-CO")}
+                      ${(product.revenue ?? 0).toLocaleString("es-CO")}
                     </p>
                   </td>
                 </tr>

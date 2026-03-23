@@ -6,10 +6,15 @@ import {
   addDoc, 
   serverTimestamp, 
   runTransaction,
-  doc 
+  doc,
+  query,
+  where,
+  Timestamp,
+  getCountFromServer
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useNotificaciones } from "@/lib/hooks/useNotificaciones";
 
 interface SaleData {
   items: any[];
@@ -21,13 +26,14 @@ interface SaleData {
 export const useSales = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuthStore();
+  const { mostrarNotificacion, vibrar, actualizarBadge } = useNotificaciones();
 
   const processSale = async (data: SaleData & { debtorId?: string }) => {
     setIsProcessing(true);
     try {
+      let lowStockItems: { name: string; quantity: number }[] = [];
+
       await runTransaction(db, async (transaction) => {
-        // ... (pre-reads remain the same)
-        
         // 1.1. Leer productos
         const productSnapshots = await Promise.all(
           data.items.map(item => transaction.get(doc(db, "products", item.id)))
@@ -41,13 +47,13 @@ export const useSales = () => {
           if (!debtorDoc.exists()) throw new Error("Cliente no encontrado.");
         }
 
-        // ... (validations remain the same)
+        // Validaciones de stock
         productSnapshots.forEach((productDoc, index) => {
           const item = data.items[index];
           if (!productDoc.exists()) {
             throw new Error(`Producto ${item.name} no encontrado.`);
           }
-          const currentStock = productDoc.data().stock || 0;
+          const currentStock = productDoc.data()?.stock || 0;
           if (currentStock < item.quantity) {
             throw new Error(`Stock insuficiente para ${item.name}.`);
           }
@@ -59,13 +65,20 @@ export const useSales = () => {
         productSnapshots.forEach((productDoc, index) => {
           const item = data.items[index];
           const currentData = productDoc.data();
+          const newStock = (currentData?.stock || 0) - item.quantity;
+          const stockMinimo = currentData?.stockMinimo ?? 5; // Default common in the app
+
           transaction.update(productDoc.ref, {
-            stock: (currentData?.stock || 0) - item.quantity,
+            stock: newStock,
             salesCount: (currentData?.salesCount || 0) + item.quantity
           });
+
+          if (newStock <= stockMinimo) {
+            lowStockItems.push({ name: item.name, quantity: newStock });
+          }
         });
 
-        // 2.2. Crear el registro de la venta
+        // ... rest of transaction writes (creating sale, updating debtor)
         const salesRef = collection(db, "sales");
         const newSaleRef = doc(salesRef);
         
@@ -86,7 +99,6 @@ export const useSales = () => {
           status: "completed"
         });
 
-        // 2.3. Si es a crédito, actualizar deudor
         if (data.paymentMethod === "Credit" && data.debtorId && debtorDoc) {
           const currentDebt = debtorDoc.data().totalDebt || 0;
           transaction.update(debtorDoc.ref, {
@@ -106,6 +118,38 @@ export const useSales = () => {
           });
         }
       });
+
+      // Operaciones post-transacción exitosa
+      const totalFormatted = (data.total ?? 0).toLocaleString("es-CO");
+      mostrarNotificacion("Venta registrada", { 
+        body: `Total: $${totalFormatted}`,
+        icon: "/icon-192.png"
+      });
+      vibrar([100, 50, 100]);
+
+      // Actualizar App Badge con ventas del día
+      try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const qSalesToday = query(
+          collection(db, "sales"),
+          where("createdAt", ">=", Timestamp.fromDate(startOfDay))
+        );
+        const snapshot = await getCountFromServer(qSalesToday);
+        actualizarBadge(snapshot.data().count);
+      } catch (badgeError) {
+        console.warn("No se pudo actualizar el badge:", badgeError);
+      }
+
+      // Notificaciones de stock bajo (solo para admin)
+      if (user?.role === "admin" || user?.role === "propietario") {
+        lowStockItems.forEach(item => {
+          mostrarNotificacion("Stock bajo", {
+            body: `Quedan ${item.quantity} unidades de ${item.name}`,
+            icon: "/icon-192.png"
+          });
+        });
+      }
 
       return true;
     } catch (error: any) {

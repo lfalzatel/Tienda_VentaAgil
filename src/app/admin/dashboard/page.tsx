@@ -350,7 +350,7 @@ export default function DashboardPage() {
                        sale.paymentMethod === "Credit" ? <History size={20} /> : <CreditCard size={20} />}
                     </div>
                     <div>
-                      <p className="text-base font-black text-slate-900">${sale.total.toLocaleString("es-CO")}</p>
+                      <p className="text-base font-black text-slate-900">${(sale.total ?? 0).toLocaleString("es-CO")}</p>
                       {(sale.customerName || sale.debtorName) && (
                         <p className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                           <span>{sale.customerName || sale.debtorName}</span>

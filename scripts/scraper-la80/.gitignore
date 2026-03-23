@@ -1,0 +1,4 @@
+node_modules/
+serviceAccount.json
+productos.json
+scraper.log

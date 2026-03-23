@@ -138,7 +138,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                 <span className="text-xs font-bold text-slate-500">{item.label}</span>
               </div>
               <span className="font-black text-slate-900">
-                {item.isCount ? item.value : `$${item.value.toLocaleString("es-CO")}`}
+                {item.isCount ? item.value : `$${(item.value ?? 0).toLocaleString("es-CO")}`}
               </span>
             </div>
           ))}
@@ -157,7 +157,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                       )}>
                         {item.sign}
                       </span>
-                      <span className="text-sm font-black text-slate-900">${item.value.toLocaleString("es-CO")}</span>
+                      <span className="text-sm font-black text-slate-900">${(item.value ?? 0).toLocaleString("es-CO")}</span>
                     </div>
                   </div>
                 ))}
@@ -211,7 +211,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                         <div className="h-2 w-2 rounded-full bg-orange-500 shadow-sm shadow-orange-200" />
                         <span className="text-xs font-black text-slate-900">{sale.debtorName}</span>
                       </div>
-                      <span className="text-sm font-black text-orange-600">${sale.total.toLocaleString("es-CO")}</span>
+                      <span className="text-sm font-black text-orange-600">${(sale.total ?? 0).toLocaleString("es-CO")}</span>
                     </div>
                     
                     <div className="flex justify-between items-center">
@@ -251,7 +251,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                       </div>
                       <span className="text-xs font-bold text-slate-700">{debtor.name}</span>
                     </div>
-                    <span className="text-xs font-black text-red-600">${debtor.balance.toLocaleString("es-CO")}</span>
+                    <span className="text-xs font-black text-red-600">${(debtor.balance ?? 0).toLocaleString("es-CO")}</span>
                   </div>
                 ))}
               </div>

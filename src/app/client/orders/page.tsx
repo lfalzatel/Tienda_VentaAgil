@@ -415,7 +415,7 @@ export default function ClientOrdersPage() {
                             </div>
                         </div>
                         <p className="text-xl font-black text-slate-900">
-                            ${order.total.toLocaleString("es-CO")}
+                            ${(order.total ?? 0).toLocaleString("es-CO")}
                         </p>
                     </div>
 
@@ -494,7 +494,7 @@ export default function ClientOrdersPage() {
                                     <div key={prd.id} className="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-slate-100">
                                         <div className="pr-4">
                                             <p className="text-sm font-black text-slate-900">{prd.name}</p>
-                                            <p className="text-[10px] font-bold text-emerald-600">${prd.price.toLocaleString("es-CO")}</p>
+                                            <p className="text-[10px] font-bold text-emerald-600">${(prd.price ?? 0).toLocaleString("es-CO")}</p>
                                         </div>
                                         <button
                                             onClick={() => handleAddToCart(prd)}
@@ -517,7 +517,7 @@ export default function ClientOrdersPage() {
                                     <div key={item.productId} className="flex items-center justify-between">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-black text-slate-900">{item.name}</span>
-                                            <span className="text-[10px] font-bold text-slate-400">${item.price.toLocaleString("es-CO")} c/u</span>
+                                            <span className="text-[10px] font-bold text-slate-400">${(item.price ?? 0).toLocaleString("es-CO")} c/u</span>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center bg-slate-100 rounded-lg p-1">
@@ -666,7 +666,7 @@ export default function ClientOrdersPage() {
                             <h3 className="text-sm font-black tracking-widest text-slate-400 uppercase">Resumen del pedido</h3>
                             <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                                 <span className="font-black text-emerald-800">Total a pagar:</span>
-                                <span className="font-black text-emerald-600 text-xl">${cartTotal.toLocaleString("es-CO")}</span>
+                                <span className="font-black text-emerald-600 text-xl">${(cartTotal ?? 0).toLocaleString("es-CO")}</span>
                             </div>
                         </div>
                     )}
@@ -703,7 +703,7 @@ export default function ClientOrdersPage() {
                                     {getStatusDisplay(selectedOrder.status).text}
                                 </span>
                             </h2>
-                            <p className="text-sm font-black text-emerald-600 mt-0.5">${selectedOrder.total.toLocaleString("es-CO")}</p>
+                            <p className="text-sm font-black text-emerald-600 mt-0.5">${(selectedOrder.total ?? 0).toLocaleString("es-CO")}</p>
                         </div>
                     </div>
                     <button 
@@ -724,7 +724,7 @@ export default function ClientOrdersPage() {
                                 {selectedOrder.items.map(item => (
                                     <div key={item.productId} className="flex justify-between text-sm">
                                         <span className="font-bold text-slate-700">{item.quantity}x {item.name}</span>
-                                        <span className="font-medium text-slate-500">${(item.price * item.quantity).toLocaleString("es-CO")}</span>
+                                        <span className="font-medium text-slate-500">${((item.price ?? 0) * item.quantity).toLocaleString("es-CO")}</span>
                                     </div>
                                 ))}
                             </div>

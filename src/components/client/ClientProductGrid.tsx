@@ -17,7 +17,7 @@ interface Product {
   salesCount?: number;
 }
 
-export const ProductGrid = () => {
+export const ClientProductGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -55,10 +55,10 @@ export const ProductGrid = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={18} />
           <input
             type="text"
-            placeholder="Buscar producto..."
+            placeholder="¿Qué deseas comprar hoy?..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300 shadow-sm"
+            className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300 shadow-sm font-medium"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide shrink-0">
@@ -90,6 +90,8 @@ export const ProductGrid = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-28 w-full">
             {filteredProducts.map((product) => {
               const isSelected = items.some((item) => item.id === product.id);
+              const isLowStock = product.stock <= 5 && product.stock > 0;
+              
               return (
                 <div
                   key={product.id}
@@ -107,7 +109,7 @@ export const ProductGrid = () => {
                     ) : (
                       <Package className="text-slate-300" size={24} />
                     )}
-                    {product.stock <= 5 && product.stock > 0 && (
+                    {isLowStock && (
                       <div className="absolute inset-0 bg-orange-500/10 flex items-center justify-center">
                         <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
                       </div>
@@ -132,7 +134,7 @@ export const ProductGrid = () => {
                         "text-[10px] font-bold shrink-0",
                         product.stock <= 5 ? "text-orange-500" : "text-slate-400"
                       )}>
-                        Stock: {product.stock}
+                        {product.stock > 0 ? `Disponibles: ${product.stock}` : "Agotado"}
                       </span>
 
                       {isSelected ? (

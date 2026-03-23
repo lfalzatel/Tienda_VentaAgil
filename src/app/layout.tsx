@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PWAProvider } from "@/components/layout/PWAProvider";
+import { NotificationProvider } from "@/components/layout/NotificationProvider";
 
 export const metadata: Metadata = {
   title: "VentaÁgil | Sistema de Ventas",
@@ -43,6 +44,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <PWAProvider />
+          <NotificationProvider />
           {children}
           <BottomNav />
         </AuthProvider>

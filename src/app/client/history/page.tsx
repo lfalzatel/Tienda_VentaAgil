@@ -3,9 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { db } from "@/lib/firebase/config";
-import { collection, query, where, onSnapshot, getDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, query, where, onSnapshot, getDoc, getDocs, setDoc, updateDoc, doc, Timestamp, serverTimestamp, addDoc, deleteDoc } from "firebase/firestore";
 import { Header } from "@/components/layout/Header";
-import { Loader2, Calendar, ShoppingBag, ArrowUpRight, TrendingDown, Search, Download, UtensilsCrossed, HandCoins, Car, HeartPulse, Home, Receipt } from "lucide-react";
+import { Loader2, Calendar, ShoppingBag, ArrowUpRight, TrendingDown, Search, Download, UtensilsCrossed, HandCoins, Car, HeartPulse, Home, Receipt, Plus, X, Pencil, Trash2, CreditCard, Phone, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
@@ -41,7 +41,7 @@ interface PersonalExpense {
 }
 
 export default function ClientHistoryPage() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>([]);
@@ -54,6 +54,24 @@ export default function ClientHistoryPage() {
     new Date().toISOString().slice(0, 7) // "YYYY-MM"
   );
   const [activeTab, setActiveTab] = useState<"movimientos" | "gastos" | "reporte">("movimientos");
+
+  // Mis Gastos State
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isSavingExpense, setIsSavingExpense] = useState(false);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [expenseForm, setExpenseForm] = useState({
+    title: '',
+    amount: '',
+    category: 'Comida',
+    description: '',
+    personName: '',
+    date: new Date().toLocaleDateString('en-CA')
+  });
+
+  // Onboarding state
+  const [cedulaInput, setCedulaInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load Data
   useEffect(() => {
@@ -180,6 +198,132 @@ export default function ClientHistoryPage() {
     };
   }, [user]);
 
+  // Actions
+  const handleOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cedulaInput || !user) return;
+    setIsSubmitting(true);
+
+    try {
+      const q = query(collection(db, "debtors"), where("cedula", "==", cedulaInput));
+      const snap = await getDocs(q);
+      
+      let debtorId = "";
+      if (snap.empty) {
+        const newRef = doc(collection(db, "debtors"));
+        await setDoc(newRef, {
+          name: user.name || "Cliente Desconocido",
+          email: user.email,
+          cedula: cedulaInput,
+          phone: phoneInput,
+          totalDebt: 0,
+          createdAt: serverTimestamp()
+        });
+        debtorId = newRef.id;
+      } else {
+        debtorId = snap.docs[0].id;
+        await updateDoc(doc(db, "debtors", debtorId), { 
+          email: user.email 
+        });
+      }
+
+      await setDoc(doc(db, "users", user.uid), {
+        cedula: cedulaInput,
+        phone: phoneInput || null,
+        email: user.email,
+      }, { merge: true });
+
+      setUser({ ...user, cedula: cedulaInput });
+    } catch (error) {
+      console.error("Error linking identity:", error);
+      alert("Hubo un error al guardar tu perfil.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.uid || !expenseForm.title || !expenseForm.amount || !expenseForm.category || !expenseForm.date) return;
+
+    setIsSavingExpense(true);
+    try {
+      const [year, month, day] = expenseForm.date.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day, 12, 0, 0);
+
+      const expenseData: any = {
+        userId: user.uid,
+        title: expenseForm.title,
+        amount: Number(expenseForm.amount),
+        category: expenseForm.category,
+        description: expenseForm.description,
+        date: Timestamp.fromDate(localDate)
+      };
+
+      if (expenseForm.category === 'Deudas' && expenseForm.personName) {
+        expenseData.personName = expenseForm.personName;
+      } else {
+        expenseData.personName = "";
+      }
+
+      if (editingExpenseId) {
+        await updateDoc(doc(db, "personal_expenses", editingExpenseId), expenseData);
+      } else {
+        expenseData.createdAt = serverTimestamp();
+        await addDoc(collection(db, "personal_expenses"), expenseData);
+      }
+      
+      setIsAddExpenseOpen(false);
+      setEditingExpenseId(null);
+      setExpenseForm({
+        title: '',
+        amount: '',
+        category: 'Comida',
+        description: '',
+        personName: '',
+        date: new Date().toLocaleDateString('en-CA')
+      });
+    } catch (error) {
+      console.error("Error al guardar el gasto:", error);
+      alert("Hubo un error al registrar el gasto.");
+    } finally {
+      setIsSavingExpense(false);
+    }
+  };
+
+  const handleEditExpense = (expense: PersonalExpense) => {
+    let dateStr = new Date().toLocaleDateString('en-CA');
+    if (expense.date?.seconds) {
+      const d = new Date(expense.date.seconds * 1000);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      dateStr = `${yyyy}-${mm}-${dd}`;
+    }
+    
+    setExpenseForm({
+      title: expense.title || '',
+      amount: expense.amount.toString(),
+      category: expense.category,
+      description: expense.description || '',
+      personName: expense.personName || '',
+      date: dateStr
+    });
+    setEditingExpenseId(expense.id);
+    setIsAddExpenseOpen(true);
+  };
+
+  const handleDeleteExpense = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("¿Seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.")) return;
+    try {
+      await deleteDoc(doc(db, "personal_expenses", id));
+    } catch (error) {
+      console.error("Error eliminando gasto:", error);
+      alert("Hubo un error al eliminar el gasto.");
+    }
+  };
+
   // Derived filtered data
   const filteredTransactions = useMemo(() => {
     return transactions.filter(tr => {
@@ -299,7 +443,7 @@ export default function ClientHistoryPage() {
                tr.paymentMethod === 'Card' ? 'Tarjeta' : 
                tr.paymentMethod === 'Digital' ? 'Digital' : 'Contado') 
             : 'Efectivo';
-          return [date, type, method, `$${tr.amount.toLocaleString("es-CO")}`];
+          return [date, type, method, `$${(tr.amount ?? 0).toLocaleString("es-CO")}`];
         });
 
         pdf.autoTable({
@@ -327,7 +471,7 @@ export default function ClientHistoryPage() {
 
         const tableData = filteredExpenses.map(exp => {
           const date = exp.date?.seconds ? new Date(exp.date.seconds * 1000).toLocaleDateString("es-CO") : "";
-          return [date, exp.title || "Gasto general", exp.category, `$${exp.amount.toLocaleString("es-CO")}`];
+          return [date, exp.title || "Gasto general", exp.category, `$${(exp.amount ?? 0).toLocaleString("es-CO")}`];
         });
 
         pdf.autoTable({
@@ -355,12 +499,12 @@ export default function ClientHistoryPage() {
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
       currentY += 10;
-      pdf.text(`Deuda sumada en el mes: $${reportDataObj.sumDeudas.toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Deuda sumada en el mes: $${(reportDataObj.sumDeudas ?? 0).toLocaleString("es-CO")}`, 20, currentY);
       currentY += 8;
-      pdf.text(`Total gastos en el mes: $${reportDataObj.sumGastos.toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Total gastos en el mes: $${(reportDataObj.sumGastos ?? 0).toLocaleString("es-CO")}`, 20, currentY);
       currentY += 8;
       pdf.setFont("helvetica", "bold");
-      pdf.text(`Deuda Pendiente Actual: $${(debtor?.totalDebt || 0).toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Deuda Pendiente Actual: $${(debtor?.totalDebt ?? 0).toLocaleString("es-CO")}`, 20, currentY);
 
       pdf.save(`estado-cuenta-${selectedMonth}.pdf`);
     } catch (e) {
@@ -393,10 +537,59 @@ export default function ClientHistoryPage() {
   // Si no está registrado
   if (!user.cedula) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-28">
-        <Header title="Historial" />
-        <main className="flex-grow flex items-center justify-center p-6 text-center">
-            <p className="text-slate-500 font-medium">Por favor, completa tu perfil en Tu Cuenta para acceder al historial.</p>
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center p-6 pb-28">
+          <div className="max-w-md w-full bg-white rounded-[3rem] p-8 shadow-xl shadow-emerald-900/5 animate-in slide-in-from-bottom-5 duration-500">
+            <div className="text-center mb-8">
+              <div className="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <CreditCard size={32} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Completa tu Perfil</h1>
+              <p className="text-sm text-slate-500 mt-2 font-medium">
+                Para mostrarte tu historial de compras y saldo pendiente, necesitamos identificarte.
+              </p>
+            </div>
+
+            <form onSubmit={handleOnboarding} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Cédula / Documento <span className="text-red-500">*</span></label>
+                <div className="relative group">
+                  <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    required
+                    type="number"
+                    value={cedulaInput}
+                    onChange={(e) => setCedulaInput(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                    placeholder="1234567890"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Celular / WhatsApp <span className="text-slate-300">(Opcional)</span></label>
+                <div className="relative group">
+                  <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    type="tel"
+                    value={phoneInput}
+                    onChange={(e) => setPhoneInput(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                    placeholder="300 000 0000"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting || !cedulaInput}
+                className="w-full mt-6 py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex justify-center items-center gap-2"
+              >
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Vincular mi perfil"}
+              </button>
+            </form>
+          </div>
         </main>
       </div>
     );
@@ -407,28 +600,63 @@ export default function ClientHistoryPage() {
       <Header title="Historial" />
       <main className="flex-grow p-4 sm:p-8 flex flex-col max-w-4xl mx-auto w-full space-y-6">
         
-        {/* 1. CONTROLES SUPERIORES */}
-        <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-3xl shadow-sm border border-slate-100 animate-in fade-in duration-300">
+        {/* Resumen Card (Dinámica y Compacta) */}
+        <div className="bg-slate-900 rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-slate-900/10 text-white relative overflow-hidden animate-in fade-in duration-500">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          
+          <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4 text-center sm:text-left">
+            <div className="w-full sm:w-auto">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">
+                {activeTab === 'movimientos' ? `Hola, ${user.name?.split(' ')[0]}` : activeTab === 'gastos' ? 'Tus Gastos' : 'Tu Resumen'}
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-tight">
+                $
+                {activeTab === 'movimientos' 
+                  ? (debtor?.totalDebt || 0).toLocaleString("es-CO")
+                  : activeTab === 'gastos'
+                    ? (expensesTotal || 0).toLocaleString("es-CO")
+                    : (reportDataObj.sumDeudas + reportDataObj.sumGastos).toLocaleString("es-CO")
+                }
+              </h2>
+              <p className="text-[10px] font-medium text-slate-400 mt-1">
+                {activeTab === 'movimientos' ? 'Saldo total pendiente a la fecha' : activeTab === 'gastos' ? 'Inversión personal en este período' : 'Suma de deudas y gastos del mes'}
+              </p>
+            </div>
+            
+            <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 flex items-center gap-2.5">
+              <div className="p-1.5 bg-emerald-500/20 rounded-lg">
+                <Wallet size={16} className="text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">Tu Identificación</p>
+                <p className="text-xs font-black text-white mt-0.5">{user.cedula}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* 1. CONTROLES SUPERIORES (Filtros en línea) */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-white p-2 rounded-3xl shadow-sm border border-slate-100 animate-in fade-in duration-300">
           {/* Buscador */}
-          <div className="flex-grow relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="col-span-1 sm:col-span-3 relative group">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-slate-900 placeholder:text-slate-400"
-              placeholder="Buscar por descripción..."
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-xs text-slate-900 placeholder:text-slate-400"
+              placeholder="Buscar..."
             />
           </div>
           {/* Selector de mes */}
-          <div className="relative shrink-0 flex items-center">
-            <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none" />
+          <div className="col-span-1 sm:col-span-2 relative flex items-center group">
+            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none group-focus-within:text-emerald-500" />
             <input
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               max={new Date().toISOString().slice(0, 7)}
-              className="w-full sm:w-auto pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 cursor-pointer h-full"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-black text-xs text-slate-900 cursor-pointer h-full uppercase"
             />
           </div>
         </div>
@@ -530,7 +758,7 @@ export default function ClientHistoryPage() {
                               ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "text-red-500" : "text-slate-700") 
                               : "text-emerald-500"
                         )}>
-                          {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
+                          {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${(tr.amount ?? 0).toLocaleString("es-CO")}
                         </p>
                         <div className="mt-1.5 flex flex-col items-end">
                           <p className="text-[10px] font-medium text-slate-400">
@@ -561,9 +789,29 @@ export default function ClientHistoryPage() {
               
               <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
                 <h3 className="text-lg font-black text-slate-900 tracking-tight">Registro de Gastos</h3>
-                <span className="px-4 py-2 bg-violet-50 text-violet-600 rounded-xl font-bold text-sm">
-                  💸 Total gastado: ${expensesTotal.toLocaleString("es-CO")}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="px-4 py-2 bg-violet-50 text-violet-600 rounded-xl font-bold text-sm">
+                    💸 Total: ${(expensesTotal ?? 0).toLocaleString("es-CO")}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setEditingExpenseId(null);
+                      setExpenseForm({
+                        title: '',
+                        amount: '',
+                        category: 'Comida',
+                        description: '',
+                        personName: '',
+                        date: new Date().toLocaleDateString('en-CA')
+                      });
+                      setIsAddExpenseOpen(true);
+                    }}
+                    className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
+                    title="Registrar Gasto"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -599,10 +847,24 @@ export default function ClientHistoryPage() {
                             {expense.date?.seconds ? new Date(expense.date.seconds * 1000).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Reciente'}
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
+                        <div className="text-right shrink-0 flex flex-col items-end gap-2">
                           <p className="text-lg sm:text-xl font-black text-slate-900 tracking-tighter">
-                            ${expense.amount.toLocaleString("es-CO")}
+                            ${(expense.amount ?? 0).toLocaleString("es-CO")}
                           </p>
+                          <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleEditExpense(expense); }}
+                              className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-emerald-600 rounded-lg border border-slate-100 transition-colors"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleDeleteExpense(expense.id, e); }}
+                              className="p-1.5 bg-white hover:bg-slate-100 text-slate-400 hover:text-rose-500 rounded-lg border border-slate-100 transition-colors"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -656,15 +918,15 @@ export default function ClientHistoryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-rose-50 p-5 rounded-2xl border border-rose-100">
                   <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Deuda sumada mes</p>
-                  <p className="text-2xl font-black text-rose-600">${reportDataObj.sumDeudas.toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-rose-600">${(reportDataObj.sumDeudas ?? 0).toLocaleString("es-CO")}</p>
                 </div>
                 <div className="bg-violet-50 p-5 rounded-2xl border border-violet-100">
                   <p className="text-[10px] font-black text-violet-500 uppercase tracking-widest mb-1">Gastos mes</p>
-                  <p className="text-2xl font-black text-violet-600">${reportDataObj.sumGastos.toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-violet-600">${(reportDataObj.sumGastos ?? 0).toLocaleString("es-CO")}</p>
                 </div>
                 <div className="bg-slate-100 p-5 rounded-2xl border border-slate-200">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Combinado</p>
-                  <p className="text-2xl font-black text-slate-700">${(reportDataObj.sumDeudas + reportDataObj.sumGastos).toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-slate-700">${((reportDataObj.sumDeudas ?? 0) + (reportDataObj.sumGastos ?? 0)).toLocaleString("es-CO")}</p>
                 </div>
               </div>
 
@@ -673,6 +935,124 @@ export default function ClientHistoryPage() {
 
         </div>
       </main>
+
+      {/* Expense Form Modal (Moved from Dashboard) */}
+      {isAddExpenseOpen && (
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm sm:p-6 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">{editingExpenseId ? 'Editar Gasto' : 'Registrar Gasto'}</h2>
+                <p className="text-xs font-medium text-slate-500 mt-1">Anota un nuevo gasto personal.</p>
+              </div>
+              <button 
+                onClick={() => setIsAddExpenseOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                disabled={isSavingExpense}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto">
+              <form id="expense-form" onSubmit={handleSaveExpense} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Título del gasto <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    type="text"
+                    value={expenseForm.title}
+                    onChange={(e) => setExpenseForm({...expenseForm, title: e.target.value})}
+                    className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                    placeholder="Ej: Mercado, Arriendo, Le debo a Juan"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Monto <span className="text-red-500">*</span></label>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      step="100"
+                      value={expenseForm.amount}
+                      onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                      className="w-full pl-8 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoría <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    value={expenseForm.category}
+                    onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value})}
+                    className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 appearance-none"
+                  >
+                    <option value="Comida">Comida</option>
+                    <option value="Deudas">Deudas</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Salud">Salud</option>
+                    <option value="Hogar">Hogar</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+
+                {expenseForm.category === 'Deudas' && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">¿A quién le debes? <span className="text-red-500">*</span></label>
+                    <input
+                      required
+                      type="text"
+                      value={expenseForm.personName}
+                      onChange={(e) => setExpenseForm({...expenseForm, personName: e.target.value})}
+                      className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Fecha <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    type="date"
+                    value={expenseForm.date}
+                    onChange={(e) => setExpenseForm({...expenseForm, date: e.target.value})}
+                    className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Descripción <span className="text-slate-400 tracking-normal capitalize">(Opcional)</span></label>
+                  <textarea
+                    value={expenseForm.description}
+                    onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
+                    className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-slate-900 placeholder:text-slate-400 resize-none"
+                    placeholder="Detalles adicionales..."
+                    rows={2}
+                  />
+                </div>
+              </form>
+            </div>
+
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button
+                form="expense-form"
+                type="submit"
+                disabled={isSavingExpense}
+                className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+              >
+                {isSavingExpense ? <Loader2 size={18} className="animate-spin" /> : (editingExpenseId ? 'Guardar Cambios' : 'Registrar Gasto')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

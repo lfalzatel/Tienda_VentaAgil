@@ -81,17 +81,31 @@ export const downloadPurchasesCSV = (purchases: any[], filterName: string) => {
     return `"${str.replace(/"/g, '""')}"`;
   };
 
-  const rows = purchases.map(purchase => [
-    escape(purchase.id),
-    escape(purchase.createdAt?.toDate ? purchase.createdAt.toDate().toLocaleString("es-CO") : new Date().toLocaleString("es-CO")),
-    escape(purchase.productName),
-    purchase.quantity,
-    purchase.costPrice,
-    purchase.total
-  ]);
+  const rows = purchases.flatMap(purchase => {
+    // Para el CSV, podemos optar por una fila por ítem o una fila por compra con los ítems concatenados.
+    // Dado que el encabezado original era simple, vamos a concatenar los productos en una sola celda 
+    // pero sumar sus cantidades y totales para la fila de la compra.
+    const productsDetails = purchase.items
+      ?.map((item: any) => `${item.productName} (x${item.quantity})`)
+      .join(" | ") || "Sin productos";
+    
+    const totalQty = purchase.items?.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) || 0;
+
+    return [[
+      escape(purchase.id),
+      escape(purchase.createdAt?.toDate ? purchase.createdAt.toDate().toLocaleString("es-CO") : new Date().toLocaleString("es-CO")),
+      escape(productsDetails),
+      totalQty,
+      "-", // El precio costo es por ítem, no aplica a nivel de compra general si hay varios
+      purchase.total
+    ]];
+  }).map(row => row[0]);
 
   const totalSpent = purchases.reduce((acc, p) => acc + (p.total || 0), 0);
-  const totalItems = purchases.reduce((acc, p) => acc + (p.quantity || 0), 0);
+  const totalItems = purchases.reduce((acc, p) => {
+    const qty = p.items?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0;
+    return acc + qty;
+  }, 0);
   
   const summaryRow = [
     escape("RESUMEN"),

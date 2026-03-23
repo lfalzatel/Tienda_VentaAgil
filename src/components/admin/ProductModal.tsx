@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Loader2, Save, Package, Tag, DollarSign, Database, Image as ImageIcon, Plus, TrendingUp } from "lucide-react";
+import { X, Loader2, Save, Package, Tag, DollarSign, Image as ImageIcon, Plus, TrendingUp, Lock, LockOpen, Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { db, storage } from "@/lib/firebase/config";
 import { collection, addDoc, updateDoc, doc, getDocs } from "firebase/firestore";
@@ -26,6 +26,9 @@ interface ProductModalProps {
 
 export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [isStockUnlocked, setIsStockUnlocked] = useState(false);
+  
+  const isEditing = !!product;
   const [formData, setFormData] = useState<Product>({
     name: "",
     price: 0,
@@ -41,7 +44,6 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
   const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
-    // Fetch unique categories from products
     const fetchCategories = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
@@ -51,7 +53,9 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
         console.error("Error fetching categories:", error);
       }
     };
-    fetchCategories();
+    if (isOpen) {
+      fetchCategories();
+    }
   }, [isOpen]);
 
   useEffect(() => {
@@ -59,16 +63,26 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
       setFormData(product);
       setImagePreview(product.image || null);
       setIsNewCategory(false);
+      setIsStockUnlocked(false);
     } else {
       setFormData({ name: "", price: 0, costPrice: 0, markup: 0, category: "", stock: 0 });
       setImagePreview(null);
       setIsNewCategory(false);
+      setIsStockUnlocked(false);
     }
     setImageFile(null);
     setNewCategoryName("");
   }, [product, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "price" || name === "costPrice" || name === "markup" || name === "stock" ? Number(value) : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +91,6 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
     try {
       let imageUrl = formData.image || null;
 
-      // Subir imagen si hay una nueva seleccionada
       if (imageFile) {
         const imageRef = ref(storage, `products/${Date.now()}-${imageFile.name}`);
         const snapshot = await uploadBytes(imageRef, imageFile);
@@ -88,21 +101,19 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
       const finalData = { 
         ...formData, 
         category: finalCategory, 
-        image: imageUrl ?? null // Asegurar que sea null y no undefined
+        image: imageUrl ?? null
       };
 
       if (product?.id) {
-        // Editar
         await updateDoc(doc(db, "products", product.id), finalData as any);
       } else {
-        // Crear
         await addDoc(collection(db, "products"), finalData);
       }
 
       onClose();
     } catch (error) {
       console.error("Error al guardar producto:", error);
-      alert("Error al guardar el producto. Revisa la consola.");
+      alert("Error al guardar el producto.");
     } finally {
       setLoading(false);
     }
@@ -161,8 +172,9 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                   <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     required
+                    name="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleChange}
                     className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
                     placeholder="Ej. Protector Solar"
                   />
@@ -176,13 +188,14 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                     <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <select
                       required
+                      name="category"
                       value={isNewCategory ? "NEW" : formData.category}
                       onChange={(e) => {
                         if (e.target.value === "NEW") {
                           setIsNewCategory(true);
                         } else {
                           setIsNewCategory(false);
-                          setFormData({ ...formData, category: e.target.value });
+                          handleChange(e);
                         }
                       }}
                       className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold appearance-none cursor-pointer text-slate-900"
@@ -217,6 +230,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                   <input
                     required
                     type="number"
+                    name="costPrice"
                     value={formData.costPrice}
                     onChange={(e) => {
                       const cost = Number(e.target.value);
@@ -236,6 +250,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                   <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="number"
+                    name="markup"
                     value={formData.markup}
                     onChange={(e) => {
                       const m = Number(e.target.value);
@@ -256,6 +271,7 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                   <input
                     required
                     type="number"
+                    name="price"
                     value={formData.price}
                     onChange={(e) => {
                       const p = Number(e.target.value);
@@ -269,18 +285,46 @@ export const ProductModal = ({ isOpen, onClose, product }: ProductModalProps) =>
                 </div>
               </div>
 
-              <div className="space-y-2 col-span-1 sm:col-span-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Stock Inicial</label>
+              <div className="space-y-1.5 flex-1 col-span-1 sm:col-span-2">
+                <div className="flex items-center justify-between ml-1 mb-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Actual</label>
+                  {isEditing && !isStockUnlocked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm("¿Estás seguro de que deseas ajustar el stock manualmente? Esto puede afectar la integridad de los registros de compras.")) {
+                          setIsStockUnlocked(true);
+                        }
+                      }}
+                      className="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-tighter"
+                    >
+                      Ajuste Manual
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
-                  <Database className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300">
+                    {isEditing && !isStockUnlocked ? <Lock size={16} /> : (isEditing && isStockUnlocked ? <LockOpen size={16} className="text-emerald-600" /> : <Hash size={16} />)}
+                  </div>
                   <input
-                    required
                     type="number"
+                    name="stock"
+                    readOnly={isEditing && !isStockUnlocked}
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all text-sm font-bold text-slate-900 placeholder:text-slate-600"
+                    onChange={handleChange}
+                    className={cn(
+                      "w-full pl-10 pr-4 py-3 rounded-2xl transition-all font-bold text-slate-900 border-none",
+                      isEditing && !isStockUnlocked 
+                        ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                        : "bg-slate-50 focus:ring-2 focus:ring-emerald-500/20"
+                    )}
                     placeholder="0"
                   />
+                  {isEditing && !isStockUnlocked && (
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tight mt-1.5 ml-1 italic">
+                      El stock se gestiona desde Compras
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
