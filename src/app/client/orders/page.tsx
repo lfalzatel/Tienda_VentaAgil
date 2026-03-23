@@ -258,7 +258,8 @@ export default function ClientOrdersPage() {
 
   const handleSaveOrder = async () => {
     setSubmitAttempted(true);
-    if (!user?.uid || orderForm.items.length === 0 || !orderForm.address.trim()) return;
+    const hasLocation = !!(orderForm.location?.lat) || orderForm.address.trim().length > 0;
+    if (!user?.uid || orderForm.items.length === 0 || !hasLocation) return;
     setIsSubmitting(true);
 
     try {
@@ -562,12 +563,12 @@ export default function ClientOrdersPage() {
                                     placeholder="Ej: Calle 45 #12-30, Barrio Centro"
                                     className={cn(
                                         "w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-slate-900 placeholder:text-slate-400 text-sm",
-                                        submitAttempted && !orderForm.address.trim() ? "border-red-400 bg-red-50" : "border-slate-200"
+                                        submitAttempted && !orderForm.address.trim() && !orderForm.location?.lat ? "border-red-400 bg-red-50" : "border-slate-200"
                                     )}
                                 />
                             </div>
-                            {submitAttempted && !orderForm.address.trim() && (
-                                <p className="text-xs text-red-500 font-bold mt-1 px-1">La dirección es obligatoria para continuar.</p>
+                            {submitAttempted && !orderForm.address.trim() && !orderForm.location?.lat && (
+                                <p className="text-xs text-red-500 font-bold mt-1 px-1">Ingresa una dirección o comparte tu ubicación GPS para continuar.</p>
                             )}
                         </div>
 
@@ -675,7 +676,7 @@ export default function ClientOrdersPage() {
                 <div className="p-5 pt-4 border-t border-slate-100 bg-white shrink-0">
                     <button
                         onClick={handleSaveOrder}
-                        disabled={isSubmitting || orderForm.items.length === 0 || !orderForm.address.trim()}
+                        disabled={isSubmitting || orderForm.items.length === 0 || (!orderForm.address.trim() && !orderForm.location?.lat)}
                         className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex justify-center items-center gap-2"
                     >
                         {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : editingOrder ? "Guardar cambios" : "Enviar Pedido"}
@@ -690,7 +691,7 @@ export default function ClientOrdersPage() {
         <div className="fixed inset-0 z-[70] flex flex-col items-center justify-end sm:justify-center bg-slate-900/50 backdrop-blur-sm sm:p-6 animate-in fade-in duration-200">
             <div className="bg-white w-full h-[90vh] sm:h-[85vh] sm:max-w-2xl rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                <div className="sticky top-0 z-30 px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md shrink-0">
                     <div className="flex items-center gap-3">
                         <button onClick={() => setSelectedOrder(null)} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full sm:hidden">
                             <ChevronLeft size={24} />

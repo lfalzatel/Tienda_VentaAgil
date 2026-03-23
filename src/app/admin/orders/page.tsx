@@ -336,7 +336,7 @@ export default function AdminOrdersPage() {
         {selectedOrder ? (
             <div className="flex flex-col h-[100dvh] lg:h-screen">
                 {/* Header (Mobile specific closing) */}
-                <div className="bg-white border-b border-slate-200 p-4 lg:p-6 flex items-center justify-between shrink-0">
+                <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 p-4 lg:p-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <button onClick={() => setSelectedOrder(null)} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full lg:hidden">
                             <X size={24} />
