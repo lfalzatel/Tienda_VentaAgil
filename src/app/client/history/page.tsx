@@ -41,6 +41,7 @@ interface PersonalExpense {
   date: Timestamp;
   items?: any[];
   orderId?: string;
+  paymentMethod?: string;
 }
 
 export default function ClientHistoryPage() {
@@ -845,7 +846,8 @@ export default function ClientHistoryPage() {
                             amount: expense.amount,
                             date: expense.date,
                             description: expense.description,
-                            items: expense.items || []
+                            items: expense.items || [],
+                            paymentMethod: expense.paymentMethod || (expense.category === 'Pedido' ? 'Credit' : 'Cash')
                           });
                           setIsDetailsOpen(true);
                         }

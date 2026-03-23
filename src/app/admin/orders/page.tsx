@@ -150,7 +150,8 @@ export default function AdminOrdersPage() {
         date: selectedOrder.createdAt || serverTimestamp(),
         createdAt: serverTimestamp(),
         orderId: selectedOrder.id,
-        items: selectedOrder.items
+        items: selectedOrder.items,
+        paymentMethod: selectedOrder.paymentMethod || "Cash"
       };
       await addDoc(collection(db, "personal_expenses"), expenseData);
 
