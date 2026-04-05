@@ -176,8 +176,8 @@ export default function LoginPage() {
       </div>
 
       {showBiometricPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl animate-in slide-in-from-bottom-5">
+        <div className="fixed inset-0 z-[100] grid place-items-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-[360px] shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
                 <Fingerprint size={32} className="text-emerald-600" />

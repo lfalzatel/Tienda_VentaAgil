@@ -42,7 +42,7 @@ const BottomNavContent = () => {
   ];
 
   const clientNavItems: NavItem[] = [
-    { label: "Comprar", path: "/client/purchases", icon: ShoppingBag },
+    { label: "Mis Compras", path: "/client/purchases", icon: ShoppingBag },
     { label: "Historial", path: "/client/history", icon: History, match: (p: string, t: string | null) => p === "/client/history" },
     { label: "Pedidos", path: "/client/orders", icon: MessageCircle, match: (p: string, t: string | null) => p === "/client/orders" },
     { label: "Mi Código", path: "/client/qr", icon: QrCode, match: (p: string, t: string | null) => p === "/client/qr" },
