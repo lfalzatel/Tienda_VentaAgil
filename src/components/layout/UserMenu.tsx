@@ -116,29 +116,28 @@ export const UserMenu = () => {
     try {
       showSplash("logout");
       
-      // Simular progreso suave
       let currentProgress = 0;
       const progressInterval = setInterval(() => {
         currentProgress += Math.random() * 20;
         updateSplash({ progress: Math.min(99, currentProgress) });
       }, 300);
 
-      // Esperar tiempo requerido visualmente
       await new Promise(resolve => setTimeout(resolve, 3200));
       
       clearInterval(progressInterval);
       updateSplash({ progress: 100 });
 
-      // IMPORTANTE: Fuerzo el redireccionamiento para que los componentes se desmonten
-      // y limpien sus listeners de Firebase (onSnapshot) ANTES de soltar el token de auth.
-      // Esto evita los errores "FirebaseError: [code=permission-denied]"
-      router.push("/login");
+      // Cierre estándar y síncrono.
+      // Borramos UI local
+      useAuthStore.getState().setUser(null);
       
-      // Esperamos a que React ejecute los unmounts (cleanup de useEffects)
-      await new Promise(resolve => setTimeout(resolve, 150));
-
+      // Cerramos sesión de Firebase INMEDIATAMENTE para evitar que el socket 
+      // de Firestore se corrompa para el próximo login. (Los errores de permisos 
+      // ya están manejados e ignorados en Header.tsx)
       await signOut(auth);
       
+      router.push("/login");
+
     } catch (error) {
       console.error("Error signing out:", error);
     }

@@ -65,23 +65,24 @@ export const SplashScreen = () => {
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f8fafc] select-none transition-all duration-500 ease-in-out",
+      "fixed inset-0 z-[9999] bg-[#f8fafc] select-none transition-all duration-500 ease-in-out overflow-hidden",
       isLeaving ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
     )}>
       {/* Background decoration */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-emerald-50 blur-[120px] opacity-60"></div>
         <div className="absolute bottom-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-sky-50 blur-[120px] opacity-60"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-8 -mt-12 sm:-mt-16">
+      {/* Main Content - Centered firmly using margin auto to prevent horizontal shifts */}
+      <div className="absolute top-[45%] left-0 right-0 mx-auto w-full max-w-[280px] flex flex-col items-center gap-8 -translate-y-1/2 px-4 z-10">
         {/* Animated Rings and Icon */}
-        <div className="relative flex items-center justify-center h-32 w-32">
+        <div className="relative flex items-center justify-center h-32 w-32 shrink-0 mx-auto">
           {/* Inner Ring (Clockwise) */}
           <div className="absolute inset-0 rounded-full border-[3px] border-emerald-500/20 border-t-emerald-500 animate-spin"></div>
           
           {/* Outer Ring (Counter-Clockwise) */}
-          <div className="absolute -inset-4 rounded-full border-[3px] border-sky-500/10 border-b-sky-500 animate-spin-reverse duration-1000"></div>
+          <div className="absolute -inset-4 rounded-full border-[3px] border-sky-500/10 border-b-sky-500 animate-[spin_1.5s_linear_reverse]"></div>
           
           {/* Central Icon */}
           <div className="bg-white rounded-[1.8rem] h-20 w-20 flex items-center justify-center shadow-2xl border border-slate-100">
@@ -90,7 +91,7 @@ export const SplashScreen = () => {
         </div>
 
         {/* Text and Progress */}
-        <div className="flex flex-col items-center gap-6 w-64">
+        <div className="flex flex-col items-center gap-6 w-full max-w-[16rem]">
            <div className="text-center space-y-2">
               <h2 className="text-xl font-black text-slate-900 tracking-tight italic">VentaÁgil</h2>
               <p className="text-sm font-bold text-emerald-600 transition-all duration-500 min-h-[20px]">
@@ -113,8 +114,8 @@ export const SplashScreen = () => {
       </div>
 
       {/* Security Badge */}
-      <div className="absolute bottom-12 flex flex-col items-center gap-2">
-         <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-100">
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 w-full px-4 text-center">
+         <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-100 mx-auto">
            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
            <span className="text-[10px] font-bold text-slate-400 tracking-wider">CONEXIÓN SEGURA ACTIVA</span>
          </div>

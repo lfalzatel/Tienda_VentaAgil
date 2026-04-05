@@ -55,6 +55,11 @@ export const Header = ({ title }: HeaderProps) => {
     const qOrders = query(collection(db, "orders"), where("status", "==", "pending"));
     const unsub = onSnapshot(qOrders, (snap) => {
       setPendingOrdersCount(snap.docs.length);
+    }, (error) => {
+      // Ignorar errores de permisos durante el cierre de sesión
+      if (error.code !== "permission-denied") {
+        console.error("Error admin orders snapshot:", error);
+      }
     });
     return () => unsub();
   }, [user]);
@@ -90,6 +95,10 @@ export const Header = ({ title }: HeaderProps) => {
 
     const unsub = onSnapshot(q, (snap) => {
       setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() } as Notification)));
+    }, (error) => {
+      if (error.code !== "permission-denied") {
+        console.error("Error header notifications snapshot:", error);
+      }
     });
 
     return () => unsub();

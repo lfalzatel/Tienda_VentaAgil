@@ -148,6 +148,12 @@ export default function LoginPage() {
       console.error(err);
       setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
       setLoading(false);
+      hideSplash();
+      // Ensure we clear interval in case it threw early
+      if (typeof window !== 'undefined') {
+        let id = window.setTimeout(() => {}, 0);
+        while (id--) window.clearTimeout(id);
+      }
     }
   };
 
