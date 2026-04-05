@@ -73,7 +73,7 @@ export default function ClientsPage() {
             <div className="px-4 py-1.5">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight">Total Deuda</p>
               <p className="text-lg font-black text-red-600 tracking-tighter">
-                ${(totalGlobalDebt ?? 0).toLocaleString("es-CO")}
+                ${totalGlobalDebt.toLocaleString("es-CO")}
               </p>
             </div>
             <div className="h-8 w-px bg-slate-100"></div>
@@ -163,7 +163,7 @@ export default function ClientsPage() {
                         client.totalDebt > 0 ? "text-red-500" : "text-slate-400"
                       )}>
                         {client.totalDebt > 0 
-                          ? `$${(client.totalDebt ?? 0).toLocaleString("es-CO")} pendiente` 
+                          ? `$${client.totalDebt.toLocaleString("es-CO")} pendiente` 
                           : "Al día"}
                       </p>
                     </div>

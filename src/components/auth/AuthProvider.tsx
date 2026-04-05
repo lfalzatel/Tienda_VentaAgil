@@ -16,17 +16,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useAuth();
   const { isLoading } = useAuthStore();
   const pathname = usePathname();
-  const { showSplash, hideSplash, updateSplash, isVisible } = useSplashStore();
+  const { showSplash, hideSplash, updateSplash, isVisible, mode } = useSplashStore();
 
   useEffect(() => {
+    // Solo manejamos el splash automático para 'reload'
     if (isLoading && !isVisible) {
       showSplash("reload");
-    } else if (!isLoading && isVisible) {
+    } else if (!isLoading && isVisible && mode === "reload") {
       // Sincronizar barra al 100% antes de ocultar
       updateSplash({ progress: 100 });
       setTimeout(() => hideSplash(), 500);
     }
-  }, [isLoading, isVisible, showSplash, hideSplash, updateSplash]);
+  }, [isLoading, isVisible, mode, showSplash, hideSplash, updateSplash]);
 
   // Simular progreso para recargas
   useEffect(() => {

@@ -143,7 +143,7 @@ export default function ReportsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                         <p className="text-lg font-black text-slate-900">$${(sale.total ?? 0).toLocaleString("es-CO")}</p>
+                         <p className="text-lg font-black text-slate-900">${sale.total.toLocaleString("es-CO")}</p>
                          <span className="px-2 py-0.5 bg-slate-50 rounded-md text-[9px] font-black text-slate-300 uppercase tracking-tighter">
                            ID: {sale.id.slice(-6).toUpperCase()}
                          </span>

@@ -457,7 +457,7 @@ export default function ClientHistoryPage() {
                tr.paymentMethod === 'Card' ? 'Tarjeta' : 
                tr.paymentMethod === 'Digital' ? 'Digital' : 'Contado') 
             : 'Efectivo';
-          return [date, type, method, `$${(tr.amount ?? 0).toLocaleString("es-CO")}`];
+          return [date, type, method, `$${tr.amount.toLocaleString("es-CO")}`];
         });
 
         pdf.autoTable({
@@ -485,7 +485,7 @@ export default function ClientHistoryPage() {
 
         const tableData = filteredExpenses.map(exp => {
           const date = exp.date?.seconds ? new Date(exp.date.seconds * 1000).toLocaleDateString("es-CO") : "";
-          return [date, exp.title || "Gasto general", exp.category, `$${(exp.amount ?? 0).toLocaleString("es-CO")}`];
+          return [date, exp.title || "Gasto general", exp.category, `$${exp.amount.toLocaleString("es-CO")}`];
         });
 
         pdf.autoTable({
@@ -513,12 +513,12 @@ export default function ClientHistoryPage() {
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
       currentY += 10;
-      pdf.text(`Deuda sumada en el mes: $${(reportDataObj.sumDeudas ?? 0).toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Deuda sumada en el mes: $${reportDataObj.sumDeudas.toLocaleString("es-CO")}`, 20, currentY);
       currentY += 8;
-      pdf.text(`Total gastos en el mes: $${(reportDataObj.sumGastos ?? 0).toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Total gastos en el mes: $${reportDataObj.sumGastos.toLocaleString("es-CO")}`, 20, currentY);
       currentY += 8;
       pdf.setFont("helvetica", "bold");
-      pdf.text(`Deuda Pendiente Actual: $${(debtor?.totalDebt ?? 0).toLocaleString("es-CO")}`, 20, currentY);
+      pdf.text(`Deuda Pendiente Actual: $${(debtor?.totalDebt || 0).toLocaleString("es-CO")}`, 20, currentY);
 
       pdf.save(`estado-cuenta-${selectedMonth}.pdf`);
     } catch (e) {
@@ -781,7 +781,7 @@ export default function ClientHistoryPage() {
                               ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "text-red-500" : "text-slate-700") 
                               : "text-emerald-500"
                         )}>
-                          {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${(tr.amount ?? 0).toLocaleString("es-CO")}
+                          {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
                         </p>
                         <div className="mt-1.5 flex flex-col items-end">
                           <p className="text-[10px] font-medium text-slate-400">

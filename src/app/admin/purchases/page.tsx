@@ -199,7 +199,7 @@ export default function PurchasesPage() {
                       <ShoppingBag size={20} />
                     </div>
                     <div>
-                      <p className="text-base font-black text-slate-900">$${(p.total ?? 0).toLocaleString("es-CO")}</p>
+                      <p className="text-base font-black text-slate-900">${p.total.toLocaleString("es-CO")}</p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <span className="truncate max-w-[120px]">
                           {p.items?.length > 1 
