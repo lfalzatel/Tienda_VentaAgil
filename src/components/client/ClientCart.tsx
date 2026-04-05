@@ -57,7 +57,7 @@ export const ClientCart = ({ onSuccess }: { onSuccess?: () => void }) => {
               </div>
               <div className="flex-grow min-w-0">
                 <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{item.name}</h4>
-                <p className="text-xs font-black text-sky-600 mt-0.5">${((item.price ?? 0) * item.quantity).toLocaleString("es-CO")}</p>
+                <p className="text-xs font-black text-sky-600 mt-0.5">${(item.price * item.quantity).toLocaleString("es-CO")}</p>
                 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-3 mt-2">
@@ -96,7 +96,7 @@ export const ClientCart = ({ onSuccess }: { onSuccess?: () => void }) => {
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Estimado</span>
           </div>
           <span className="text-3xl font-black text-slate-900 tracking-tighter leading-none">
-            ${(getTotal() ?? 0).toLocaleString("es-CO")}
+            ${getTotal().toLocaleString("es-CO")}
           </span>
         </div>
 

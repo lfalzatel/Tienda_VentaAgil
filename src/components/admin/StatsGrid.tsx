@@ -124,7 +124,7 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], t
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 w-full">
       <StatCard 
         title={`Ingresos Recibidos`} 
-        value={`$${(stats.cashReceived ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${stats.cashReceived.toLocaleString("es-CO")}`} 
         subValue={filterLabel}
         icon={Banknote}
         color="emerald"
@@ -133,7 +133,7 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], t
 
       <StatCard 
         title={`Ventas a Crédito`} 
-        value={`$${(stats.creditSales ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${stats.creditSales.toLocaleString("es-CO")}`} 
         subValue={filterLabel}
         icon={DollarSign}
         color="orange"
@@ -142,7 +142,7 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], t
 
       <StatCard 
         title="Ganancia Neta" 
-        value={`$${(stats.netProfit ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${stats.netProfit.toLocaleString("es-CO")}`} 
         subValue={filterLabel}
         icon={TrendingUp}
         color="emerald"
@@ -161,7 +161,7 @@ export const StatsGrid = ({ stats, filterLabel = "Hoy", lowStockProducts = [], t
 
       <StatCard 
         title="Deuda Clientes" 
-        value={`$${(stats.totalDebt ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${stats.totalDebt.toLocaleString("es-CO")}`} 
         subValue="Cartera histórica"
         icon={History}
         color="red"

@@ -160,7 +160,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }: CheckoutModalProps
               <div className="bg-slate-900 rounded-2xl px-4 py-3 text-white flex justify-between items-center shadow-lg shadow-slate-900/10">
                 <div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total a Pagar</p>
-                  <p className="text-xl font-black tracking-tighter">${(getTotal() ?? 0).toLocaleString("es-CO")}</p>
+                  <p className="text-xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
                 </div>
                 <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center">
                   <Hash size={16} className="text-white" />

@@ -814,7 +814,7 @@ export default function ClientHistoryPage() {
                 <h3 className="text-lg font-black text-slate-900 tracking-tight">Registro de Gastos</h3>
                 <div className="flex items-center gap-3">
                   <span className="px-4 py-2 bg-violet-50 text-violet-600 rounded-xl font-bold text-sm">
-                    💸 Total: ${(expensesTotal ?? 0).toLocaleString("es-CO")}
+                    💸 Total: ${expensesTotal.toLocaleString("es-CO")}
                   </span>
                   <button
                     onClick={() => {
@@ -897,7 +897,7 @@ export default function ClientHistoryPage() {
                         </div>
                         <div className="text-right shrink-0 flex flex-col items-end gap-2">
                           <p className="text-lg sm:text-xl font-black text-slate-900 tracking-tighter">
-                            ${(expense.amount ?? 0).toLocaleString("es-CO")}
+                            ${expense.amount.toLocaleString("es-CO")}
                           </p>
                           <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             {expense.category === 'Pedido' ? (
@@ -974,15 +974,15 @@ export default function ClientHistoryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-rose-50 p-5 rounded-2xl border border-rose-100">
                   <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Deuda sumada mes</p>
-                  <p className="text-2xl font-black text-rose-600">${(reportDataObj.sumDeudas ?? 0).toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-rose-600">${reportDataObj.sumDeudas.toLocaleString("es-CO")}</p>
                 </div>
                 <div className="bg-violet-50 p-5 rounded-2xl border border-violet-100">
                   <p className="text-[10px] font-black text-violet-500 uppercase tracking-widest mb-1">Gastos mes</p>
-                  <p className="text-2xl font-black text-violet-600">${(reportDataObj.sumGastos ?? 0).toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-violet-600">${reportDataObj.sumGastos.toLocaleString("es-CO")}</p>
                 </div>
                 <div className="bg-slate-100 p-5 rounded-2xl border border-slate-200">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Combinado</p>
-                  <p className="text-2xl font-black text-slate-700">${((reportDataObj.sumDeudas ?? 0) + (reportDataObj.sumGastos ?? 0)).toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-slate-700">${(reportDataObj.sumDeudas + reportDataObj.sumGastos).toLocaleString("es-CO")}</p>
                 </div>
               </div>
 

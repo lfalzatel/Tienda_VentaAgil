@@ -70,7 +70,7 @@ export const PurchaseStatsGrid = ({ stats, filterLabel = "Hoy" }: PurchaseStatsG
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <StatCard 
         title={`Inversión ${filterLabel}`} 
-        value={`$${(stats.totalSpent ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${stats.totalSpent.toLocaleString("es-CO")}`} 
         subValue="Gasto total en mercancía"
         icon={Wallet}
         color="emerald"
@@ -78,7 +78,7 @@ export const PurchaseStatsGrid = ({ stats, filterLabel = "Hoy" }: PurchaseStatsG
       
       <StatCard 
         title="Productos Ingresados" 
-        value={(stats.totalItems ?? 0).toLocaleString("es-CO")} 
+        value={stats.totalItems.toLocaleString("es-CO")} 
         subValue="Total de unidades compradas"
         icon={Package}
         color="sky"
@@ -94,7 +94,7 @@ export const PurchaseStatsGrid = ({ stats, filterLabel = "Hoy" }: PurchaseStatsG
 
       <StatCard 
         title="Promedio por Compra" 
-        value={`$${(Math.round(stats.avgPurchase) ?? 0).toLocaleString("es-CO")}`} 
+        value={`$${Math.round(stats.avgPurchase).toLocaleString("es-CO")}`} 
         subValue="Costo promedio de adquisición"
         icon={ShoppingBag}
         color="orange"

@@ -157,7 +157,7 @@ export const StatsDetailModal = ({ isOpen, onClose, type, data, filterLabel, onV
                       )}>
                         {item.sign}
                       </span>
-                      <span className="text-sm font-black text-slate-900">${(item.value ?? 0).toLocaleString("es-CO")}</span>
+                      <span className="text-sm font-black text-slate-900">${item.value.toLocaleString("es-CO")}</span>
                     </div>
                   </div>
                 ))}

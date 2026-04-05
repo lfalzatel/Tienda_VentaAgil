@@ -254,7 +254,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-end">
                   <div>
-                    <p className="text-2xl sm:text-3xl font-black tracking-tighter text-emerald-400">${(totalDebt ?? 0).toLocaleString("es-CO")}</p>
+                    <p className="text-2xl sm:text-3xl font-black tracking-tighter text-emerald-400">${totalDebt.toLocaleString("es-CO")}</p>
                     <p className="text-[9px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">Saldo inicial a deber</p>
                   </div>
                   <button
@@ -299,7 +299,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                           <p className="text-xs font-black text-slate-700">{p.name}</p>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{p.category}</p>
                         </div>
-                        <span className="text-xs font-black text-slate-900">${(p.price ?? 0).toLocaleString("es-CO")}</span>
+                        <span className="text-xs font-black text-slate-900">${p.price.toLocaleString("es-CO")}</span>
                       </button>
                     ))}
                   </div>
@@ -316,7 +316,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                       <div key={item.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-transparent hover:border-slate-200 transition-all">
                         <div>
                           <p className="text-xs font-black text-slate-900">{item.name}</p>
-                          <p className="text-[10px] font-bold text-slate-400">${(item.price ?? 0).toLocaleString("es-CO")}</p>
+                          <p className="text-[10px] font-bold text-slate-400">${item.price.toLocaleString("es-CO")}</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-xl shadow-sm">

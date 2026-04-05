@@ -121,7 +121,7 @@ export const ProductGrid = () => {
                         {product.category}
                       </span>
                       <span className="text-xs font-black text-slate-900 whitespace-nowrap shrink-0">
-                        ${(product.price ?? 0).toLocaleString("es-CO")}
+                        ${product.price.toLocaleString("es-CO")}
                       </span>
                     </div>
                     <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-sky-600 transition-colors">

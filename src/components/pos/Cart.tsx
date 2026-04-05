@@ -49,7 +49,7 @@ export const Cart = ({ onSuccess }: { onSuccess?: () => void }) => {
               </div>
               <div className="flex-grow">
                 <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{item.name}</h4>
-                <p className="text-xs font-black text-sky-600">${((item.price ?? 0) * item.quantity).toLocaleString("es-CO")}</p>
+                <p className="text-xs font-black text-sky-600">${(item.price * item.quantity).toLocaleString("es-CO")}</p>
                 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-3 mt-1.5">
@@ -86,7 +86,7 @@ export const Cart = ({ onSuccess }: { onSuccess?: () => void }) => {
         <div className="flex justify-between items-center px-1">
           <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Total</span>
           <span className="text-2xl font-black text-slate-900 tracking-tighter">
-            ${(getTotal() ?? 0).toLocaleString("es-CO")}
+            ${getTotal().toLocaleString("es-CO")}
           </span>
         </div>
 

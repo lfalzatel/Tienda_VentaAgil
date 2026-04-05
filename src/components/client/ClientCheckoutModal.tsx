@@ -162,7 +162,7 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
               <div className="bg-slate-900 rounded-3xl p-6 text-white flex justify-between items-center shadow-xl shadow-slate-900/20">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total a Pagar</p>
-                  <p className="text-3xl font-black tracking-tighter">${(getTotal() ?? 0).toLocaleString("es-CO")}</p>
+                  <p className="text-3xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
                 </div>
                 <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center">
                   <Hash size={24} className="text-white" />

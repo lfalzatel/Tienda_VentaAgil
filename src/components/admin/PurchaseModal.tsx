@@ -532,7 +532,7 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
 
                     <div className="flex justify-end pt-2 border-t border-slate-50">
                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                         Subtotal: <span className="text-slate-900 text-sm ml-1">${((item.quantity * item.costPrice) ?? 0).toLocaleString("es-CO")}</span>
+                         Subtotal: <span className="text-slate-900 text-sm ml-1">${(item.quantity * item.costPrice).toLocaleString("es-CO")}</span>
                        </p>
                     </div>
                   </div>
@@ -551,7 +551,7 @@ export const PurchaseModal = ({ isOpen, onClose }: PurchaseModalProps) => {
                      <DollarSign size={20} />
                    </div>
                    <p className="text-3xl font-black text-slate-900 tracking-tighter">
-                     ${(totalInvestment ?? 0).toLocaleString("es-CO")}
+                     ${totalInvestment.toLocaleString("es-CO")}
                    </p>
                 </div>
               </div>
