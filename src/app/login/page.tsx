@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Skull, Eye, EyeOff, Mail, Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isBiometricAvailable, hasBiometricRegistered, verifyBiometric, registerBiometric, removeBiometric } from "@/lib/utils/webauthn";
+import { useSplashStore } from "@/store/useSplashStore";
 
 // Custom Google and Facebook Icons
 const GoogleIcon = () => (
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { showSplash, hideSplash, updateSplash } = useSplashStore();
 
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricRegistered, setBiometricRegistered] = useState(false);
@@ -86,6 +88,19 @@ export default function LoginPage() {
       const userData = userDoc.data();
       const role = userData?.role || "client";
       
+      // Start splash transition
+      showSplash("login");
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += Math.random() * 15;
+        updateSplash({ progress: Math.min(99, currentProgress) });
+      }, 300);
+
+      // Wait 3 seconds minimum for the premium feel
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      clearInterval(progressInterval);
+      updateSplash({ progress: 100 });
+
       window.location.href = role === "client" ? "/client/history" : "/pos";
     } catch (err) {
       console.error(err);
@@ -105,11 +120,13 @@ export default function LoginPage() {
       
       // Sincronizar sesión con el servidor ANTES de navegar para evitar el redirect del middleware
       const idToken = await userCredential.user.getIdToken();
-      await fetch("/api/auth/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
+      // Start splash transition
+      showSplash("login");
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += Math.random() * 15;
+        updateSplash({ progress: Math.min(99, currentProgress) });
+      }, 300);
 
       // Obtener rol para redirección correcta
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
@@ -120,6 +137,12 @@ export default function LoginPage() {
       if (available) {
         sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
       }
+
+      // Wait 3 seconds minimum
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      clearInterval(progressInterval);
+      updateSplash({ progress: 100 });
+
       window.location.href = redirectPath;
     } catch (err: any) {
       console.error(err);
@@ -142,6 +165,14 @@ export default function LoginPage() {
         body: JSON.stringify({ idToken }),
       });
 
+      // Start splash transition
+      showSplash("login");
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += Math.random() * 15;
+        updateSplash({ progress: Math.min(99, currentProgress) });
+      }, 300);
+
       // Obtener rol para redirección correcta
       const userDoc = await getDoc(doc(db, "users", result.user.uid));
       const role = userDoc.data()?.role || "client";
@@ -151,6 +182,12 @@ export default function LoginPage() {
       if (available) {
         sessionStorage.setItem("fb_rt", result.user.refreshToken);
       }
+
+      // Wait 3 seconds minimum
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      clearInterval(progressInterval);
+      updateSplash({ progress: 100 });
+
       window.location.href = redirectPath;
     } catch (err: any) {
       console.error(err);

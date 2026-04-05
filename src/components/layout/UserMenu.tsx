@@ -18,6 +18,7 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePWAStore } from "@/store/usePWAStore";
+import { useSplashStore } from "@/store/useSplashStore";
 import { cn } from "@/lib/utils";
 import { hasBiometricRegistered, removeBiometric } from "@/lib/utils/webauthn";
 
@@ -29,6 +30,7 @@ export const UserMenu = () => {
   const [isBiometricRegistered, setIsBiometricRegistered] = useState(false);
   const { user } = useAuthStore();
   const { deferredPrompt, setDeferredPrompt } = usePWAStore();
+  const { showSplash, updateSplash } = useSplashStore();
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -112,8 +114,24 @@ export const UserMenu = () => {
 
   const handleLogout = async () => {
     try {
+      showSplash("logout");
+      
+      // Simular progreso suave
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += Math.random() * 20;
+        updateSplash({ progress: Math.min(99, currentProgress) });
+      }, 300);
+
+      // Esperar 3 segundos mínimos
+      await new Promise(resolve => setTimeout(resolve, 3200));
+      
+      clearInterval(progressInterval);
+      updateSplash({ progress: 100 });
+
       await signOut(auth);
-      router.push("/login");
+      // Redireccionamiento forzado después de limpiar todo
+      window.location.href = "/login";
     } catch (error) {
       console.error("Error signing out:", error);
     }
