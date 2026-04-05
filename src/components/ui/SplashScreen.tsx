@@ -74,7 +74,7 @@ export const SplashScreen = () => {
         <div className="absolute bottom-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-sky-50 blur-[120px] opacity-60"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-12">
+      <div className="relative z-10 flex flex-col items-center gap-8 -mt-12 sm:-mt-16">
         {/* Animated Rings and Icon */}
         <div className="relative flex items-center justify-center h-32 w-32">
           {/* Inner Ring (Clockwise) */}
@@ -90,7 +90,7 @@ export const SplashScreen = () => {
         </div>
 
         {/* Text and Progress */}
-        <div className="flex flex-col items-center gap-8 w-64">
+        <div className="flex flex-col items-center gap-6 w-64">
            <div className="text-center space-y-2">
               <h2 className="text-xl font-black text-slate-900 tracking-tight italic">VentaÁgil</h2>
               <p className="text-sm font-bold text-emerald-600 transition-all duration-500 min-h-[20px]">
@@ -106,7 +106,7 @@ export const SplashScreen = () => {
               ></div>
            </div>
            
-           <span className="text-[10px] font-black tracking-[0.2em] text-slate-300 uppercase">
+           <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
              {Math.round(progress)}% Completo
            </span>
         </div>

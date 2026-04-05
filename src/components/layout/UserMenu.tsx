@@ -123,15 +123,22 @@ export const UserMenu = () => {
         updateSplash({ progress: Math.min(99, currentProgress) });
       }, 300);
 
-      // Esperar 3 segundos mínimos
+      // Esperar tiempo requerido visualmente
       await new Promise(resolve => setTimeout(resolve, 3200));
       
       clearInterval(progressInterval);
       updateSplash({ progress: 100 });
 
-      await signOut(auth);
-      // Redireccionamiento forzado después de limpiar todo
+      // IMPORTANTE: Fuerzo el redireccionamiento para que los componentes se desmonten
+      // y limpien sus listeners de Firebase (onSnapshot) ANTES de soltar el token de auth.
+      // Esto evita los errores "FirebaseError: [code=permission-denied]"
       router.push("/login");
+      
+      // Esperamos a que React ejecute los unmounts (cleanup de useEffects)
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      await signOut(auth);
+      
     } catch (error) {
       console.error("Error signing out:", error);
     }
