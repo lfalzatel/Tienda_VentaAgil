@@ -19,15 +19,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { showSplash, hideSplash, updateSplash, isVisible, mode } = useSplashStore();
 
   useEffect(() => {
-    // Solo manejamos el splash automático para 'reload'
+    // Si la autenticación está cargando y el splash NO está visible, 
+    // lo mostramos en modo 'reload' (probablemente es una carga inicial de página).
     if (isLoading && !isVisible) {
       showSplash("reload");
-    } else if (!isLoading && isVisible && mode === "reload") {
-      // Sincronizar barra al 100% antes de ocultar
+    } 
+    // Si la autenticación terminó de cargar y el splash ESTÁ visible:
+    else if (!isLoading && isVisible) {
+      // Sincronizar barra al 100% antes de ocultar para todas las modalidades
       updateSplash({ progress: 100 });
-      setTimeout(() => hideSplash(), 500);
+      // Pequeño retardo para que el usuario vea el 100% antes de desvanecer
+      const timer = setTimeout(() => hideSplash(), 500);
+      return () => clearTimeout(timer);
     }
-  }, [isLoading, isVisible, mode, showSplash, hideSplash, updateSplash]);
+  }, [isLoading, isVisible, showSplash, hideSplash, updateSplash]);
 
   // Simular progreso para recargas
   useEffect(() => {

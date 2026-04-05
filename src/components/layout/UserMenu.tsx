@@ -131,7 +131,7 @@ export const UserMenu = () => {
 
       await signOut(auth);
       // Redireccionamiento forzado después de limpiar todo
-      window.location.href = "/login";
+      router.push("/login");
     } catch (error) {
       console.error("Error signing out:", error);
     }

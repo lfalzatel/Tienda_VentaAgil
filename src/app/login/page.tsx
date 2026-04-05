@@ -101,7 +101,7 @@ export default function LoginPage() {
       clearInterval(progressInterval);
       updateSplash({ progress: 100 });
 
-      window.location.href = role === "client" ? "/client/history" : "/pos";
+      router.push(role === "client" ? "/client/history" : "/pos");
     } catch (err) {
       console.error(err);
       setError("Error al autenticar con biometría. Intenta con contraseña.");
@@ -143,7 +143,7 @@ export default function LoginPage() {
       clearInterval(progressInterval);
       updateSplash({ progress: 100 });
 
-      window.location.href = redirectPath;
+      router.push(redirectPath);
     } catch (err: any) {
       console.error(err);
       setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
@@ -188,7 +188,7 @@ export default function LoginPage() {
       clearInterval(progressInterval);
       updateSplash({ progress: 100 });
 
-      window.location.href = redirectPath;
+      router.push(redirectPath);
     } catch (err: any) {
       console.error(err);
       if (err.code !== "auth/popup-closed-by-user") {
@@ -382,7 +382,7 @@ export default function LoginPage() {
                   if (registered) setBiometricRegistered(true);
                   const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
                   const role = userDoc.data()?.role || "client";
-                  window.location.href = role === "client" ? "/client/history" : "/pos";
+                  router.push(role === "client" ? "/client/history" : "/pos");
                 }}
                 className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.97]"
               >
@@ -392,7 +392,7 @@ export default function LoginPage() {
                 onClick={async () => {
                   const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
                   const role = userDoc.data()?.role || "client";
-                  window.location.href = role === "client" ? "/client/history" : "/pos";
+                  router.push(role === "client" ? "/client/history" : "/pos");
                 }}
                 className="w-full py-3 text-slate-400 text-xs font-black uppercase tracking-widest hover:text-slate-900 transition-colors"
               >
