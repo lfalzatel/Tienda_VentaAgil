@@ -117,13 +117,10 @@ export default function LoginPage() {
       const redirectPath = role === "client" ? "/client/history" : "/pos";
 
       const available = await isBiometricAvailable();
-      if (available && !hasBiometricRegistered()) {
+      if (available) {
         sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
-        setShowBiometricPrompt(true);
-      } else {
-        if (available) sessionStorage.setItem("fb_rt", userCredential.user.refreshToken);
-        window.location.href = redirectPath;
       }
+      window.location.href = redirectPath;
     } catch (err: any) {
       console.error(err);
       setError("Credenciales inválidas o error en el proceso. Por favor intenta de nuevo.");
@@ -151,13 +148,10 @@ export default function LoginPage() {
       const redirectPath = role === "client" ? "/client/history" : "/pos";
 
       const available = await isBiometricAvailable();
-      if (available && !hasBiometricRegistered()) {
+      if (available) {
         sessionStorage.setItem("fb_rt", result.user.refreshToken);
-        setShowBiometricPrompt(true);
-      } else {
-        if (available) sessionStorage.setItem("fb_rt", result.user.refreshToken);
-        window.location.href = redirectPath;
       }
+      window.location.href = redirectPath;
     } catch (err: any) {
       console.error(err);
       if (err.code !== "auth/popup-closed-by-user") {
@@ -175,48 +169,7 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-blue-100 blur-[120px] opacity-50"></div>
       </div>
 
-      {showBiometricPrompt && (
-        <div className="fixed inset-0 z-[100] grid place-items-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-[360px] shadow-2xl animate-in zoom-in-95 duration-300">
-            <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-                <Fingerprint size={32} className="text-emerald-600" />
-              </div>
-              <h3 className="text-xl font-black text-slate-900">Acceso rápido</h3>
-              <p className="text-sm text-slate-500 mt-2">
-                Activa tu huella o Face ID para entrar sin contraseña la próxima vez.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <button
-                onClick={async () => {
-                  const registered = await registerBiometric(email || auth.currentUser?.email || "Usuario");
-                  if (registered) {
-                    setBiometricRegistered(true);
-                  }
-                  // Determine redirect based on user role (using auth state or current path logic)
-                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
-                  const role = userDoc.data()?.role || "client";
-                  window.location.href = role === "client" ? "/client/history" : "/pos";
-                }}
-                className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98]"
-              >
-                Activar biometría
-              </button>
-              <button
-                onClick={async () => {
-                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
-                  const role = userDoc.data()?.role || "client";
-                  window.location.href = role === "client" ? "/client/history" : "/pos";
-                }}
-                className="w-full py-3 text-slate-400 text-sm font-bold hover:text-slate-600 transition-colors"
-              >
-                Ahora no
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
       
       <div className="w-full max-w-[440px] space-y-8 relative z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
         {/* Logo Section */}
@@ -254,11 +207,33 @@ export default function LoginPage() {
           <button
             onClick={() => handleSocialLogin(googleProvider)}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-8 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-bold text-slate-700 active:scale-[0.97] shadow-sm"
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-3 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-bold text-slate-700 active:scale-[0.97] shadow-sm"
           >
             <GoogleIcon />
             <span>Entrar con Google</span>
           </button>
+
+          {/* Biometric Access */}
+          {biometricAvailable && (
+            <button
+              type="button"
+              onClick={() => {
+                if (biometricRegistered) {
+                  handleBiometricLogin();
+                } else {
+                  setShowBiometricPrompt(true);
+                }
+              }}
+              disabled={biometricLoading || loading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-8 border-2 border-emerald-200 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all duration-300 font-bold text-emerald-700 active:scale-[0.97] shadow-sm"
+            >
+              {biometricLoading
+                ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                : <Fingerprint size={22} className="text-emerald-600" />
+              }
+              <span>{biometricRegistered ? "Ingresar con huella" : "Activar acceso con huella"}</span>
+            </button>
+          )}
 
           {/* Divider */}
           <div className="relative mb-8">
@@ -349,6 +324,47 @@ export default function LoginPage() {
           <div className="h-1 w-12 bg-sky-500 rounded-full"></div>
         </div>
       </div>
+      
+      {/* Biometric Prompt (V3 - Absolute Centered Fix) */}
+      {showBiometricPrompt && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md select-none">
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[320px] bg-white rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-emerald-50/50">
+                <Fingerprint size={32} className="text-emerald-500" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Acceso rápido</h3>
+              <p className="text-sm text-slate-500 mt-2 font-medium leading-relaxed">
+                Activa tu huella o Face ID para entrar sin contraseña la próxima vez.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={async () => {
+                  const registered = await registerBiometric(email || auth.currentUser?.email || "Usuario");
+                  if (registered) setBiometricRegistered(true);
+                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+                  const role = userDoc.data()?.role || "client";
+                  window.location.href = role === "client" ? "/client/history" : "/pos";
+                }}
+                className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.97]"
+              >
+                Activar biometría
+              </button>
+              <button
+                onClick={async () => {
+                  const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+                  const role = userDoc.data()?.role || "client";
+                  window.location.href = role === "client" ? "/client/history" : "/pos";
+                }}
+                className="w-full py-3 text-slate-400 text-xs font-black uppercase tracking-widest hover:text-slate-900 transition-colors"
+              >
+                Ahora no
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
