@@ -69,20 +69,21 @@ export const SplashScreen = () => {
       isLeaving ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
     )}>
       {/* Background decoration */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-emerald-50 blur-[120px] opacity-60"></div>
         <div className="absolute bottom-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-sky-50 blur-[120px] opacity-60"></div>
       </div>
 
-      {/* Main Content - Centered firmly using margin auto to prevent horizontal shifts */}
-      <div className="absolute top-[45%] left-0 right-0 mx-auto w-full max-w-[280px] flex flex-col items-center gap-8 -translate-y-1/2 px-4 z-10">
+      {/* Main Content - Pure absolute centering for complete cross-platform stability */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full px-6 z-10 pb-8">
+        
         {/* Animated Rings and Icon */}
-        <div className="relative flex items-center justify-center h-32 w-32 shrink-0 mx-auto">
+        <div className="relative flex items-center justify-center h-32 w-32 shrink-0 mb-8">
           {/* Inner Ring (Clockwise) */}
           <div className="absolute inset-0 rounded-full border-[3px] border-emerald-500/20 border-t-emerald-500 animate-spin"></div>
           
           {/* Outer Ring (Counter-Clockwise) */}
-          <div className="absolute -inset-4 rounded-full border-[3px] border-sky-500/10 border-b-sky-500 animate-[spin_1.5s_linear_reverse]"></div>
+          <div className="absolute -inset-4 rounded-full border-[3px] border-sky-500/10 border-b-sky-500 animate-[spin_1.5s_linear_infinite_reverse]"></div>
           
           {/* Central Icon */}
           <div className="bg-white rounded-[1.8rem] h-20 w-20 flex items-center justify-center shadow-2xl border border-slate-100">
@@ -91,25 +92,26 @@ export const SplashScreen = () => {
         </div>
 
         {/* Text and Progress */}
-        <div className="flex flex-col items-center gap-6 w-full max-w-[16rem]">
-           <div className="text-center space-y-2">
+        <div className="flex flex-col items-center justify-center gap-6 w-full max-w-[220px]">
+           <div className="text-center w-full space-y-2">
               <h2 className="text-xl font-black text-slate-900 tracking-tight italic">VentaÁgil</h2>
               <p className="text-sm font-bold text-emerald-600 transition-all duration-500 min-h-[20px]">
                 {message || currentMessage}
               </p>
            </div>
 
-           {/* Progress Bar Container */}
-           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner p-[1px]">
-              <div 
-                className="h-full bg-gradient-to-r from-emerald-500 to-sky-500 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              ></div>
+           {/* Progress Bar Container - Symmetrically bounded */}
+           <div className="w-full space-y-2">
+             <div className="w-full h-1.5 bg-slate-200/60 rounded-full overflow-hidden shadow-inner p-[1px]">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 to-sky-500 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                ></div>
+             </div>
+             <p className="text-center text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
+               {Math.round(progress)}% Completo
+             </p>
            </div>
-           
-           <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
-             {Math.round(progress)}% Completo
-           </span>
         </div>
       </div>
 

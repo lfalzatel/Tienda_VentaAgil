@@ -134,6 +134,9 @@ export default function ClientHistoryPage() {
             };
           });
           updateTransactionsState();
+        }, (err) => {
+          if (err.code === "permission-denied") return;
+          console.error("Error en sales listener:", err);
         });
 
         const unsubTrans = onSnapshot(query(collection(db, "debtor_transactions"), where("debtorId", "==", dDoc.id)), (tSnap) => {
@@ -152,6 +155,9 @@ export default function ClientHistoryPage() {
           });
           updateTransactionsState();
           setLoading(false);
+        }, (err) => {
+          if (err.code === "permission-denied") return;
+          console.error("Error en trans listener:", err);
         });
 
         const unsubOrders = onSnapshot(
@@ -204,6 +210,9 @@ export default function ClientHistoryPage() {
         return dateB - dateA;
       });
       setPersonalExpenses(expensesData);
+    }, (err) => {
+      if (err.code === "permission-denied") return;
+      console.error("Error en expenses listener:", err);
     });
 
     return () => {

@@ -142,37 +142,37 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
         ) : (
           <>
             {/* Header */}
-            <div className="px-8 py-6 flex justify-between items-center border-b border-slate-100">
+            <div className="px-6 py-4 flex justify-between items-center border-b border-slate-100">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Finalizar Pedido</h2>
-                <p className="text-sm font-medium text-slate-500">Confirma los detalles de tu compra</p>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">Finalizar Pedido</h2>
+                <p className="text-xs font-medium text-slate-500">Confirma los detalles de tu compra</p>
               </div>
               <button 
                 disabled={isProcessing}
                 onClick={onClose} 
                 className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-8 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
+            <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
               {/* Summary Card */}
-              <div className="bg-slate-900 rounded-3xl p-6 text-white flex justify-between items-center shadow-xl shadow-slate-900/20">
+              <div className="bg-slate-900 rounded-[2rem] p-5 text-white flex justify-between items-center shadow-xl shadow-slate-900/20">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total a Pagar</p>
-                  <p className="text-3xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black tracking-tighter">${getTotal().toLocaleString("es-CO")}</p>
                 </div>
-                <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center">
-                  <Hash size={24} className="text-white" />
+                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                  <Hash size={20} className="text-white" />
                 </div>
               </div>
 
               {/* Payment Methods */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">¿Cómo deseas pagar?</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'Cash', label: 'Efectivo', icon: Banknote },
                     { id: 'Digital', label: 'Transferencia', icon: Smartphone },
@@ -183,49 +183,49 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
                       key={m.id}
                       onClick={() => setPaymentMethod(m.id as PaymentMethod)}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-4 rounded-2xl border-2 transition-all duration-300",
+                        "flex items-center gap-3 px-3 py-3 rounded-[1.25rem] border-2 transition-all duration-300",
                         paymentMethod === m.id 
-                          ? "bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.02]" 
+                          ? "bg-slate-900 border-slate-900 text-white shadow-md scale-[1.02]" 
                           : "bg-white border-slate-100 text-slate-500 hover:border-slate-200 hover:bg-slate-50"
                       )}
                     >
                       <div className={cn(
-                        "p-2 rounded-xl",
+                        "p-1.5 rounded-lg",
                         paymentMethod === m.id ? "bg-white/10" : "bg-slate-100"
                       )}>
-                        <m.icon size={20} />
+                        <m.icon size={18} />
                       </div>
-                      <span className="text-xs font-black uppercase tracking-wider">{m.label}</span>
+                      <span className="text-[11px] font-black uppercase tracking-wider">{m.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Delivery Info */}
-              <div className="space-y-4">
-                <div className="space-y-2">
+              <div className="space-y-3">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
                     Dirección de Entrega <span className="text-rose-500">*</span>
                   </label>
                   
                   {gpsAddress && (
-                    <div className="mb-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4 group">
-                        <div className="bg-emerald-100 p-3 rounded-xl">
-                          <MapPin size={20} className="text-emerald-600" />
-                        </div>
-                        <p className="flex-grow text-sm font-bold text-emerald-900 leading-tight">
-                          {gpsAddress}
-                        </p>
-                        <button 
-                          onClick={() => {
-                            setGpsAddress("");
-                            setLocation(null);
-                          }}
-                          className="p-2 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all"
-                        >
-                          <X size={20} />
-                        </button>
+                    <div className="mb-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-[1.25rem] p-3 flex items-center gap-3 group">
+                         <div className="bg-emerald-100 p-2 rounded-lg">
+                           <MapPin size={16} className="text-emerald-600" />
+                         </div>
+                         <p className="flex-grow text-xs font-bold text-emerald-900 leading-tight">
+                           {gpsAddress}
+                         </p>
+                         <button 
+                           onClick={() => {
+                             setGpsAddress("");
+                             setLocation(null);
+                           }}
+                           className="p-1.5 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all"
+                         >
+                           <X size={16} />
+                         </button>
                       </div>
                     </div>
                   )}
@@ -233,12 +233,12 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
                   <div className="flex gap-2">
                     <div className="relative group flex-grow">
                       <MapPin className={cn(
-                        "absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors",
+                        "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors",
                         (location || gpsAddress) && "text-emerald-500"
-                      )} size={18} />
+                      )} size={16} />
                       <input
-                        placeholder="Ej: Calle 45 #12-30, Barrio Centro"
-                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-sky-500/10 transition-all"
+                        placeholder="Ej: Calle 45 #12-30"
+                        className="w-full pl-10 pr-3 py-3 bg-slate-50 border-none rounded-[1.25rem] text-sm font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-sky-500/10 transition-all"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                       />
@@ -248,29 +248,29 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
                       disabled={isGettingLocation || isProcessing}
                       title="Compartir mi ubicación actual"
                       className={cn(
-                        "px-4 rounded-2xl transition-all flex items-center justify-center border-2",
+                        "px-3 rounded-[1.25rem] transition-all flex items-center justify-center border-2",
                         (location || gpsAddress)
-                          ? "bg-emerald-50 border-emerald-100 text-emerald-600 shadow-md" 
+                          ? "bg-emerald-50 border-emerald-100 text-emerald-600 shadow-sm" 
                           : "bg-white border-slate-100 text-slate-400 hover:border-slate-200 hover:bg-slate-50"
                       )}
                     >
                       {isGettingLocation ? (
-                        <Loader2 className="animate-spin text-sky-600" size={20} />
+                        <Loader2 className="animate-spin text-sky-600" size={18} />
                       ) : (
-                        (location || gpsAddress) ? <Globe size={20} /> : <Navigation size={20} />
+                        (location || gpsAddress) ? <Globe size={18} /> : <Navigation size={18} />
                       )}
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nota para el pedido</label>
                   <div className="relative group">
-                    <MessageSquare className="absolute left-4 top-5 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={18} />
+                    <MessageSquare className="absolute left-3 top-4 text-slate-400 group-focus-within:text-sky-500 transition-colors" size={16} />
                     <textarea
-                      placeholder="Ej: Tocar el timbre fuerte, traer cambio de $50mil..."
+                      placeholder="Ej: Tocar el timbre fuerte..."
                       rows={2}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-sky-500/10 transition-all resize-none"
+                      className="w-full pl-10 pr-3 py-3 bg-slate-50 border-none rounded-[1.25rem] text-sm font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-sky-500/10 transition-all resize-none"
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                     />
@@ -283,19 +283,19 @@ export const ClientCheckoutModal = ({ isOpen, onClose, onSuccess }: ClientChecko
                 onClick={handleCheckout}
                 disabled={isProcessing || items.length === 0}
                 className={cn(
-                  "w-full flex items-center justify-center gap-3 py-5 bg-sky-600 hover:bg-sky-700 text-white rounded-[2rem] font-black text-sm shadow-2xl shadow-sky-600/20 transition-all duration-300 active:scale-[0.98] mt-4",
+                  "w-full flex items-center justify-center gap-2 py-4 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-sky-600/20 transition-all duration-300 active:scale-[0.98] mt-2",
                   (isProcessing || items.length === 0) && "opacity-70 cursor-not-allowed shadow-none"
                 )}
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 className="animate-spin" size={20} />
+                    <Loader2 className="animate-spin" size={18} />
                     <span>Enviando pedido...</span>
                   </>
                 ) : (
                   <>
                     <span>Confirmar Pedido</span>
-                    <CheckCircle2 size={20} />
+                    <CheckCircle2 size={18} />
                   </>
                 )}
               </button>

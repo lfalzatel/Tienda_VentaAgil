@@ -230,22 +230,6 @@ export default function LoginPage() {
 
         {/* Form Container */}
         <div className="bg-white/80 backdrop-blur-2xl border border-white/50 p-6 rounded-[2rem] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.06)]">
-          {/* Biometric Login */}
-          {biometricAvailable && biometricRegistered && (
-            <button
-              type="button"
-              onClick={handleBiometricLogin}
-              disabled={biometricLoading || loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-4 border-2 border-emerald-200 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all duration-300 font-bold text-emerald-700 active:scale-[0.97] shadow-sm"
-            >
-              {biometricLoading
-                ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-                : <Fingerprint size={22} className="text-emerald-600" />
-              }
-              <span>Entrar con huella / Face ID</span>
-            </button>
-          )}
-
           {/* Social Login (Primary) */}
           <button
             onClick={() => handleSocialLogin(googleProvider)}

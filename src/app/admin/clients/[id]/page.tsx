@@ -21,7 +21,10 @@ import {
   MessageSquare,
   Download,
   Edit2,
-  ShieldAlert
+  ShieldAlert,
+  Wallet,
+  ShoppingBag,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -31,11 +34,14 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 interface Transaction {
   id: string;
-  type: "sale" | "payment";
+  type: "sale" | "payment" | "order";
   amount: number;
   date: any;
   description?: string;
   paymentMethod?: string;
+  saleId?: string;
+  orderId?: string;
+  items?: any[];
 }
 
 interface Client {
@@ -55,6 +61,8 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,20 +78,65 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
       console.error("Error in client listener:", error);
     });
 
-    // Escuchar transacciones
-    const transRef = collection(db, "debtor_transactions");
-    const qTrans = query(
-      transRef, 
-      where("debtorId", "==", resolvedParams.id),
-      orderBy("date", "desc")
-    );
-    
-    const unsubTrans = onSnapshot(qTrans, (snapshot) => {
-      const docs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Transaction, "id">),
-      }));
-      setTransactions(docs);
+    // Escuchar transacciones y ventas
+    let currentSales: Transaction[] = [];
+    let currentPayments: Transaction[] = [];
+
+    const updateTransactionsState = () => {
+      const merged: Transaction[] = [...currentSales];
+      currentPayments.forEach(pt => {
+        if (pt.type === "payment") {
+          merged.push(pt);
+        } else if (pt.type === "sale") {
+          const exists = merged.find(s => s.id === pt.saleId || s.id === pt.id);
+          if (!exists) merged.push(pt);
+        }
+      });
+
+      merged.sort((a, b) => {
+        const dateA = a.date?.seconds || 0;
+        const dateB = b.date?.seconds || 0;
+        return dateB - dateA;
+      });
+      setTransactions(merged);
+    };
+
+    const unsubSales = onSnapshot(query(collection(db, "sales"), where("debtorId", "==", resolvedParams.id)), (tSnap) => {
+      currentSales = tSnap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          type: "sale" as const,
+          amount: data.total,
+          date: data.createdAt,
+          saleId: doc.id,
+          orderId: data.orderId,
+          paymentMethod: data.paymentMethod,
+          items: data.items,
+          description: data.items ? `${data.items.length} productos` : "Compra a crédito"
+        };
+      });
+      updateTransactionsState();
+    }, (error) => {
+      if (error.code === "permission-denied") return;
+      console.error("Error in sales listener:", error);
+    });
+
+    const unsubTrans = onSnapshot(query(collection(db, "debtor_transactions"), where("debtorId", "==", resolvedParams.id)), (tSnap) => {
+      currentPayments = tSnap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          type: data.type as "sale" | "payment",
+          amount: data.amount,
+          date: data.date,
+          saleId: data.saleId,
+          orderId: data.orderId,
+          description: data.description,
+          paymentMethod: data.type === "sale" ? "credit" : undefined
+        };
+      });
+      updateTransactionsState();
     }, (error) => {
       if (error.code === "permission-denied") return;
       console.error("Error in trans listener:", error);
@@ -91,6 +144,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
 
     return () => {
       unsubClient();
+      unsubSales();
       unsubTrans();
     };
   }, [resolvedParams.id]);
@@ -220,25 +274,35 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                   </div>
                 ) : (
                   transactions.map((tr) => (
-                    <div key={tr.id} className="flex items-center justify-between p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                    <div 
+                      key={tr.id} 
+                      onClick={() => {
+                        setSelectedTransaction(tr);
+                        setIsDetailsOpen(true);
+                      }}
+                      className={cn(
+                        "flex items-center justify-between p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group",
+                        (tr.items || tr.type === 'sale') && "cursor-pointer active:scale-[0.99]"
+                      )}
+                    >
                       <div className="flex items-center gap-4">
                         <div className={cn(
-                          "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                          "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
                           tr.type === "sale" ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
                         )}>
                           {tr.type === "sale" ? <ArrowUpRight size={20} /> : <TrendingDown size={20} />}
                         </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-900">
+                        <div className="min-w-0 pr-4">
+                          <p className="text-sm font-black text-slate-900 truncate">
                             {tr.type === "sale" ? "Compra / Deuda" : "Abono / Pago"}
                           </p>
                           <p className="text-[10px] font-bold text-slate-400 flex items-center gap-2">
                              <Calendar size={10} />
-                             {new Date(tr.date?.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'short', year: 'numeric' })}
+                             {tr.date?.seconds ? new Date(tr.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'short', year: 'numeric' }) : 'Reciente'}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <p className={cn(
                           "text-lg font-black tracking-tighter",
                           tr.type === "sale" ? "text-slate-900" : "text-emerald-600"
@@ -251,7 +315,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
                           </span>
                         )}
                         {tr.description && (
-                           <p className="text-[9px] font-medium text-slate-400 max-w-[150px] truncate">{tr.description}</p>
+                           <p className="text-[9px] font-medium text-slate-400 max-w-[150px] truncate ml-auto">{tr.description}</p>
                         )}
                       </div>
                     </div>
@@ -274,6 +338,122 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
         onClose={() => setIsEditModalOpen(false)}
         client={client}
       />
+
+      {/* Transaction Detail Modal */}
+      {isDetailsOpen && selectedTransaction && (() => {
+        const extractedOrderId = selectedTransaction.orderId || (selectedTransaction.description?.match(/Pedido #([A-Z0-9]+)/)?.[1]);
+        const displayId = extractedOrderId || selectedTransaction.id;
+
+        return (
+          <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md sm:p-6 animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500">
+            {/* Header */}
+            <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
+                  selectedTransaction.type === 'order' ? "bg-violet-100 text-violet-600" :
+                  selectedTransaction.type === 'sale' ? (selectedTransaction.paymentMethod?.toLowerCase() === 'credit' ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600") :
+                  "bg-emerald-100 text-emerald-600"
+                )}>
+                  {selectedTransaction.type === 'payment' ? <TrendingDown size={24} /> : <ShoppingBag size={24} />}
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight">Detalle del Movimiento</h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      {selectedTransaction.type === 'order' ? 'Pedido Confirmado' : 
+                       selectedTransaction.type === 'sale' ? 'Compra Realizada' : 
+                       'Abono a Deuda'}
+                    </p>
+                    <span className="text-[10px] font-black text-slate-300 bg-slate-50 px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                      #{displayId.slice(-6).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsDetailsOpen(false)}
+                className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-8">
+              {/* Info General */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha</p>
+                  <p className="text-sm font-black text-slate-700">
+                    {selectedTransaction.date?.seconds 
+                      ? new Date(selectedTransaction.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'long', year: 'numeric' }) 
+                      : 'Reciente'}
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Método</p>
+                  <p className="text-sm font-black text-slate-700 capitalize">
+                    {selectedTransaction.paymentMethod === 'credit' ? 'Crédito' : 
+                     selectedTransaction.paymentMethod === 'Cash' ? 'Efectivo' : 
+                     selectedTransaction.paymentMethod === 'Card' ? 'Tarjeta' : 
+                     selectedTransaction.paymentMethod === 'Digital' ? 'Digital' : 
+                     selectedTransaction.paymentMethod || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Items / Description */}
+              <div>
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-50 pb-2">
+                  {selectedTransaction.items && selectedTransaction.items.length > 0 ? `Productos (${selectedTransaction.items.length})` : 'Información Adicional'}
+                </h3>
+                
+                {selectedTransaction.items && selectedTransaction.items.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedTransaction.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-sm bg-white p-3 rounded-xl border border-slate-50 shadow-sm">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs shrink-0">{item.quantity}</span>
+                          <span className="font-bold text-slate-700 truncate">{item.name}</span>
+                        </div>
+                        <span className="font-black text-slate-900 ml-4 shrink-0">${((item.price * item.quantity) || 0).toLocaleString("es-CO")}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 italic text-slate-500 text-sm font-medium">
+                    {selectedTransaction.description || "Sin descripción adicional."}
+                  </div>
+                )}
+              </div>
+
+              {/* Total Card */}
+              <div className="bg-slate-900 rounded-3xl p-6 text-white flex justify-between items-center shadow-xl shadow-slate-900/10">
+                <div>
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Monto Total</p>
+                  <p className="text-3xl font-black tracking-tighter mt-1">${(selectedTransaction.amount || 0).toLocaleString("es-CO")}</p>
+                </div>
+                <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                  <Wallet size={24} className="text-emerald-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button 
+                onClick={() => setIsDetailsOpen(false)}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all active:scale-[0.98]"
+              >
+                Cerrar Detalle
+              </button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
     </div>
   );
 }

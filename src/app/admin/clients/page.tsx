@@ -41,6 +41,9 @@ export default function ClientsPage() {
       }));
       setClients(docs);
       setLoading(false);
+    }, (error) => {
+      if (error.code === "permission-denied") return;
+      console.error("Error en clients listener:", error);
     });
 
     return () => unsubscribe();
