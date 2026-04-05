@@ -19,20 +19,31 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { showSplash, hideSplash, updateSplash, isVisible, mode } = useSplashStore();
 
   useEffect(() => {
-    // Si la autenticación está cargando y el splash NO está visible, 
-    // lo mostramos en modo 'reload' (probablemente es una carga inicial de página).
+    // 1. Caso: Carga inicial por recarga (F5 / Primer ingreso)
     if (isLoading && !isVisible) {
       showSplash("reload");
     } 
-    // Si la autenticación terminó de cargar y el splash ESTÁ visible:
-    else if (!isLoading && isVisible) {
-      // Sincronizar barra al 100% antes de ocultar para todas las modalidades
+    // 2. Caso: Finalizar Carga inicial (Reload)
+    else if (!isLoading && isVisible && mode === "reload") {
       updateSplash({ progress: 100 });
-      // Pequeño retardo para que el usuario vea el 100% antes de desvanecer
       const timer = setTimeout(() => hideSplash(), 500);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, isVisible, showSplash, hideSplash, updateSplash]);
+    // 3. Caso: Login (Transición manual)
+    else if (!isLoading && isVisible && mode === "login" && pathname !== "/login") {
+      updateSplash({ progress: 100 });
+      // Retardo extra para asegurar el renderizado del dashboard (1000ms)
+      const timer = setTimeout(() => hideSplash(), 1000);
+      return () => clearTimeout(timer);
+    }
+    // 4. Caso: Logout (Transición manual)
+    else if (!isLoading && isVisible && mode === "logout" && pathname === "/login") {
+      updateSplash({ progress: 100 });
+      // Retardo para asegurar el renderizado del formulario de login
+      const timer = setTimeout(() => hideSplash(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isVisible, mode, pathname, showSplash, hideSplash, updateSplash]);
 
   // Simular progreso para recargas
   useEffect(() => {
@@ -46,9 +57,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Si estamos en medio de una transición (como login/logout), el Splash debe permanecer visible
   // incluso si isLoading es false (gracias a isVisible del store).
-  if (isVisible && pathname !== "/seed") {
-    return <SplashScreen />;
-  }
-
-  return <>{children}</>;
+  return (
+    <>
+      {isVisible && pathname !== "/seed" && <SplashScreen />}
+      {children}
+    </>
+  );
 };

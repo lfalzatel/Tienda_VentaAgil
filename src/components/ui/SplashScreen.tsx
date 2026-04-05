@@ -31,17 +31,29 @@ const MESSAGES = {
 
 export const SplashScreen = () => {
   const { isVisible, mode, progress, message } = useSplashStore();
-  const [currentMessage, setCurrentMessage] = useState(message);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [shouldRender, setShouldRender] = useState(isVisible);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState(message);
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+      setIsLeaving(false);
+    } else {
+      setIsLeaving(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 500); 
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     if (!isVisible) return;
-
-    // Rotar mensajes internos si no se provee uno específico
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % MESSAGES[mode].length);
-    }, 1500);
-
+    }, 1200);
     return () => clearInterval(interval);
   }, [isVisible, mode]);
 
@@ -49,10 +61,13 @@ export const SplashScreen = () => {
     setCurrentMessage(MESSAGES[mode][messageIndex]);
   }, [mode, messageIndex]);
 
-  if (!isVisible) return null;
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f8fafc] select-none">
+    <div className={cn(
+      "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f8fafc] select-none transition-all duration-500 ease-in-out",
+      isLeaving ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
+    )}>
       {/* Background decoration */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-emerald-50 blur-[120px] opacity-60"></div>
