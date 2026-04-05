@@ -162,7 +162,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-4 font-sans overflow-hidden">
+    <div className="flex h-[100dvh] items-center justify-center bg-[#f8fafc] p-2 sm:p-4 font-sans overflow-hidden">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-sky-100 blur-[120px] opacity-50"></div>
@@ -171,22 +171,22 @@ export default function LoginPage() {
 
 
       
-      <div className="w-full max-w-[440px] space-y-8 relative z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
+      <div className="w-full max-w-[400px] space-y-4 relative z-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
         {/* Logo Section */}
         <div className="text-center group">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-[2rem] bg-[#0f2922] border border-emerald-500/30 text-emerald-400 shadow-2xl shadow-emerald-900/20 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
-            <Skull className="h-10 w-10 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-[#0f2922] border border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-900/20 transition-all duration-500 group-hover:scale-105 group-hover:rotate-3">
+            <Skull className="h-8 w-8 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
           </div>
-          <h1 className="mt-8 text-4xl font-black tracking-tighter text-slate-900 italic">
+          <h1 className="mt-4 text-3xl font-black tracking-tighter text-slate-900 italic">
             VentaÁgil
           </h1>
-          <p className="mt-3 text-base text-slate-500 font-medium">
+          <p className="mt-1 text-sm text-slate-500 font-medium">
             Acceso inteligente para tu tienda
           </p>
         </div>
 
         {/* Form Container */}
-        <div className="bg-white/80 backdrop-blur-2xl border border-white/50 p-10 rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)]">
+        <div className="bg-white/80 backdrop-blur-2xl border border-white/50 p-6 rounded-[2rem] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.06)]">
           {/* Biometric Login */}
           {biometricAvailable && biometricRegistered && (
             <button
@@ -207,7 +207,7 @@ export default function LoginPage() {
           <button
             onClick={() => handleSocialLogin(googleProvider)}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-3 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-bold text-slate-700 active:scale-[0.97] shadow-sm"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 mb-2 border border-slate-200 rounded-2xl bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 font-bold text-slate-700 active:scale-[0.97] shadow-sm text-sm"
           >
             <GoogleIcon />
             <span>Entrar con Google</span>
@@ -225,55 +225,55 @@ export default function LoginPage() {
                 }
               }}
               disabled={biometricLoading || loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-4 mb-8 border-2 border-emerald-200 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all duration-300 font-bold text-emerald-700 active:scale-[0.97] shadow-sm"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 mb-4 border-2 border-emerald-200 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all duration-300 font-bold text-emerald-700 active:scale-[0.97] shadow-sm text-sm"
             >
               {biometricLoading
                 ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-                : <Fingerprint size={22} className="text-emerald-600" />
+                : <Fingerprint size={20} className="text-emerald-600" />
               }
               <span>{biometricRegistered ? "Ingresar con huella" : "Activar acceso con huella"}</span>
             </button>
           )}
 
           {/* Divider */}
-          <div className="relative mb-8">
+          <div className="relative mb-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-100"></span>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-[10px] uppercase">
               <span className="bg-white/0 px-4 text-slate-400 font-bold tracking-widest backdrop-blur-sm">Acceso Administrador</span>
             </div>
           </div>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-4" onSubmit={handleLogin}>
             {error && (
-              <div className="p-4 text-sm font-medium text-red-600 bg-red-50/50 border border-red-100 rounded-2xl animate-shake">
+              <div className="p-3 text-xs font-medium text-red-600 bg-red-50/50 border border-red-100 rounded-xl animate-shake">
                 {error}
               </div>
             )}
             
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                  Correo Electrónico
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                  Email
                 </label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors">
-                    <Mail size={18} />
+                    <Mail size={16} />
                   </div>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300"
+                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300"
                     placeholder="tu@correo.com"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-1">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
                   Contraseña
                 </label>
                 <div className="relative group">
@@ -282,7 +282,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300"
+                    className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all duration-300"
                     placeholder="••••••••"
                   />
                   <button
@@ -290,7 +290,7 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-600 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className={cn(
-                "group relative w-full flex justify-center py-4 px-4 border border-transparent text-base font-bold rounded-2xl text-white bg-slate-900 hover:bg-slate-800 focus:outline-none ring-offset-2 transition-all duration-300 shadow-xl active:scale-[0.98]",
+                "group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-slate-900 hover:bg-slate-800 focus:outline-none ring-offset-2 transition-all duration-300 shadow-lg active:scale-[0.98]",
                 loading && "opacity-70 cursor-not-allowed"
               )}
             >
