@@ -386,9 +386,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ id: str
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha</p>
-                  <p className="text-sm font-black text-slate-700">
+                  <p className="text-xs font-black text-slate-700 capitalize">
                     {selectedTransaction.date?.seconds 
-                      ? new Date(selectedTransaction.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'long', year: 'numeric' }) 
+                      ? new Date(selectedTransaction.date.seconds * 1000).toLocaleString("es-CO", { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) 
                       : 'Reciente'}
                   </p>
                 </div>
