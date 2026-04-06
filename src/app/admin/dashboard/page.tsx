@@ -31,6 +31,7 @@ interface Sale {
   items: any[];
   debtorId?: string;
   customerName?: string;
+  clientName?: string;
   debtorName?: string;
 }
 
@@ -170,11 +171,18 @@ export default function DashboardPage() {
       setCostOfSoldItems(costOfSoldItemsCount);
 
       const enrichedSales = sales.map(sale => {
-         if (sale.paymentMethod === "Credit") {
-             const name = sale.customerName || (sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null) || "Cliente Desconocido";
-             return { ...sale, customerName: name, debtorName: name };
-         }
-         return sale;
+         // Algunos flujos (como confirmar pedido) usan clientName, otros (POS) usan customerName
+         const explicitName = sale.customerName || sale.clientName || (sale.debtorId ? allDebtorsMap.current[sale.debtorId] : null);
+         
+         // Asignaremos un nombre por defecto si no tienen
+         const finalName = explicitName || (sale.paymentMethod === "Credit" ? "Crédito sin asignar" : "Mostrador / Público");
+
+         return { 
+           ...sale, 
+           customerName: finalName, 
+           clientName: finalName, 
+           debtorName: finalName 
+         };
       });
 
       setAllSales(enrichedSales);

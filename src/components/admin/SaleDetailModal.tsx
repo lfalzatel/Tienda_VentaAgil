@@ -17,6 +17,7 @@ interface Sale {
   items: SaleItem[];
   createdAt: any;
   customerName?: string;
+  clientName?: string;
 }
 
 interface SaleDetailModalProps {
@@ -88,7 +89,7 @@ export function SaleDetailModal({ sale, isOpen, onClose }: SaleDetailModalProps)
             </div>
             <div className="p-2 sm:p-3 bg-slate-50 rounded-lg border border-slate-100 col-span-2">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Cliente</p>
-              <p className="text-[10px] font-bold text-slate-700">{sale.customerName || "Cliente Desconocido"}</p>
+              <p className="text-[10px] font-bold text-slate-700">{sale.customerName || sale.clientName || "Mostrador / Público"}</p>
             </div>
           </div>
 
