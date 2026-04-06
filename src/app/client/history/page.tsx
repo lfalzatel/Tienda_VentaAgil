@@ -368,7 +368,8 @@ export default function ClientHistoryPage() {
   }, [transactions, selectedMonth, searchQuery]);
 
   const filteredExpenses = useMemo(() => {
-    return personalExpenses.filter(exp => {
+    // 1. Gastos manuales del cliente
+    const expenses = personalExpenses.filter(exp => {
       const date = exp.date?.seconds ? new Date(exp.date.seconds * 1000) : null;
       let dateString = '';
       if (date) {
@@ -381,7 +382,34 @@ export default function ClientHistoryPage() {
         : true;
       return matchMonth && matchSearch;
     });
-  }, [personalExpenses, selectedMonth, searchQuery]);
+
+    // 2. Pagos/Abonos registrados en la tienda (automáticos)
+    const storePayments = transactions
+      .filter(tr => tr.type === 'payment')
+      .filter(tr => {
+        const date = tr.date?.seconds ? new Date(tr.date.seconds * 1000) : null;
+        let dateString = '';
+        if (date) dateString = date.toISOString().slice(0, 7);
+        const matchMonth = dateString ? dateString === selectedMonth : true;
+        const matchSearch = searchQuery
+          ? "abono a la tienda (automático)".includes(searchQuery.toLowerCase()) ||
+            tr.amount.toString().includes(searchQuery)
+          : true;
+        return matchMonth && matchSearch;
+      })
+      .map(tr => ({
+        id: "auto-" + tr.id,
+        userId: user?.uid || "",
+        title: "Abono a la Tienda",
+        amount: tr.amount,
+        category: "Deudas",
+        description: "Abono registrado automáticamente por la tienda",
+        date: tr.date,
+        isAuto: true // Marcador para evitar edición o eliminación
+      } as any));
+
+    return [...expenses, ...storePayments].sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
+  }, [personalExpenses, transactions, selectedMonth, searchQuery, user?.uid]);
 
   // Derived summaries for Movimientos
   const purchaseCount = useMemo(() => filteredTransactions.filter(t => t.type === 'sale').length, [filteredTransactions]);
@@ -915,6 +943,10 @@ export default function ClientHistoryPage() {
                             {expense.category === 'Pedido' ? (
                               <div className="px-2 py-1 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-100">
                                 <Ban size={10} /> Bloqueado
+                              </div>
+                            ) : expense.isAuto ? (
+                              <div className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-emerald-100">
+                                <Ban size={10} /> Automático
                               </div>
                             ) : (
                               <>
