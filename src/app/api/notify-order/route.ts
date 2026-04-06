@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
     // Obtener tokens FCM de todos los admins y propietarios usando adminDb
     const usersSnap = await adminDb.collection("users").where("role", "in", ["admin", "propietario"]).get();
 
-    const tokenPromises = usersSnap.docs.map(async (userDoc) => {
+    const tokenPromises = usersSnap.docs.map(async (userDoc: any) => {
       const tokenSnap = await adminDb.collection("fcm_tokens").where("userId", "==", userDoc.id).get();
-      return tokenSnap.docs.map(d => d.data().token);
+      return tokenSnap.docs.map((d: any) => d.data().token);
     });
 
     const tokenArrays = await Promise.all(tokenPromises);
