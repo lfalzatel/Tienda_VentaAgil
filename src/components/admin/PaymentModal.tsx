@@ -59,6 +59,13 @@ export const PaymentModal = ({ isOpen, onClose, debtorId, debtorName }: PaymentM
         });
       });
 
+      // Disparar la notificación push para el cliente si tiene cuenta PWA
+      fetch("/api/notify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ debtorId, amount, debtorName })
+      }).catch(err => console.error("Error firing payment notification:", err));
+
       onClose();
       setAmount(0);
     } catch (error: any) {
