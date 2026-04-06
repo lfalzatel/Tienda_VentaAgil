@@ -745,11 +745,11 @@ export default function ClientHistoryPage() {
                         setSelectedTransaction(tr);
                         setIsDetailsOpen(true);
                       }}
-                      className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group cursor-pointer"
+                      className="flex items-center justify-between p-4 sm:p-5 rounded-[2rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group cursor-pointer w-full overflow-hidden"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                         <div className={cn(
-                          "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
+                          "h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0",
                           tr.type === "order"
                             ? "bg-violet-50 text-violet-600"
                             : tr.type === "sale" 
@@ -764,26 +764,26 @@ export default function ClientHistoryPage() {
                             <TrendingDown size={20} />
                           )}
                         </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-900">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-black text-slate-900 truncate">
                             {tr.type === "order" ? "Pedido Confirmado" : tr.type === "sale" ? "Nueva Compra" : "Pago Realizado"}
                           </p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5">
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 whitespace-nowrap shrink-0">
                               <Calendar size={10} />
                               {tr.date?.seconds 
                                 ? new Date(tr.date.seconds * 1000).toLocaleDateString("es-CO", { day: '2-digit', month: 'short', year: 'numeric' }) 
                                 : 'Reciente'}
                             </p>
-                            <span className="text-[9px] font-black text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                            <span className="text-[9px] font-black text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 hidden xs:inline-block">
                               #{(tr.orderId || tr.id).slice(-6).toUpperCase()}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right flex flex-col items-end shrink-0 pl-2">
+                      <div className="text-right flex flex-col items-end shrink-0 pl-2 max-w-[40%]">
                         <p className={cn(
-                          "text-lg sm:text-xl font-black tracking-tighter leading-none",
+                          "text-base sm:text-xl font-black tracking-tighter leading-none truncate w-full text-right",
                           tr.type === "order"
                             ? "text-violet-600"
                             : tr.type === "sale" 
@@ -792,19 +792,19 @@ export default function ClientHistoryPage() {
                         )}>
                           {tr.type === "order" ? "" : tr.type === "sale" ? (tr.paymentMethod?.toLowerCase() === 'credit' ? "+" : "") : "-"}${tr.amount.toLocaleString("es-CO")}
                         </p>
-                        <div className="mt-1.5 flex flex-col items-end">
-                          <p className="text-[10px] font-medium text-slate-400">
+                        <div className="mt-1.5 flex flex-col items-end w-full">
+                          <p className="text-[10px] font-medium text-slate-400 truncate w-full text-right">
                             {tr.type === "order"
                               ? tr.description
                               : tr.type === "sale" 
-                                ? (tr.paymentMethod?.toLowerCase() === 'credit' ? 'Compra a crédito' : 
-                                   tr.paymentMethod === 'Cash' ? 'Compra en efectivo' : 
-                                   tr.paymentMethod === 'Card' ? 'Pago con tarjeta' : 
-                                   tr.paymentMethod === 'Digital' ? 'Pago digital' : 'Compra al contado') 
-                                : 'Abono a deuda'}
+                                ? (tr.paymentMethod?.toLowerCase() === 'credit' ? 'A crédito' : 
+                                   tr.paymentMethod === 'Cash' ? 'Efectivo' : 
+                                   tr.paymentMethod === 'Card' ? 'Tarjeta' : 
+                                   tr.paymentMethod === 'Digital' ? 'Digital' : 'Al contado') 
+                                : 'Abono'}
                           </p>
                           {tr.type !== "order" && tr.description && tr.description.toLowerCase() !== 'abono a deuda' && (
-                            <p className="text-[10px] font-medium text-slate-400 max-w-[150px] truncate mt-0.5">{tr.description}</p>
+                            <p className="text-[10px] font-medium text-slate-400 truncate w-full text-right mt-0.5">{tr.description}</p>
                           )}
                         </div>
                       </div>
