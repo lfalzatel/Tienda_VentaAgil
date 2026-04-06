@@ -65,7 +65,7 @@ export const SplashScreen = () => {
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[9999] bg-[#f8fafc] select-none transition-all duration-500 ease-in-out overflow-hidden",
+      "fixed top-0 left-0 w-[100vw] h-[100dvh] z-[9999] bg-[#f8fafc] select-none transition-all duration-500 ease-in-out overflow-hidden",
       isLeaving ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
     )}>
       {/* Background decoration */}
@@ -74,8 +74,8 @@ export const SplashScreen = () => {
         <div className="absolute bottom-[-10%] left-[-10%] h-[600px] w-[600px] rounded-full bg-sky-50 blur-[120px] opacity-60"></div>
       </div>
 
-      {/* Main Content - Pure absolute centering for complete cross-platform stability */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full px-6 z-10 pb-8">
+      {/* Main Content - Pure absolute centering directly tied to viewport units to prevent scrollbar-width jumps */}
+      <div className="absolute top-[50dvh] left-[50vw] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-[100vw] px-6 z-10 pb-8">
         
         {/* Animated Rings and Icon */}
         <div className="relative flex items-center justify-center h-32 w-32 shrink-0 mb-8">
@@ -116,7 +116,7 @@ export const SplashScreen = () => {
       </div>
 
       {/* Security Badge */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 w-full px-4 text-center">
+      <div className="absolute bottom-12 left-[50vw] -translate-x-1/2 flex flex-col items-center gap-2 z-10 w-[100vw] px-4 text-center">
          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-slate-100 mx-auto">
            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
            <span className="text-[10px] font-bold text-slate-400 tracking-wider">CONEXIÓN SEGURA ACTIVA</span>
