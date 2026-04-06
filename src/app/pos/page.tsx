@@ -7,6 +7,7 @@ import { Cart } from "@/components/pos/Cart";
 import { ShoppingCart, ShoppingBag, X, Plus, User } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { SelectTabClientModal } from "@/components/pos/SelectTabClientModal";
+import { PushActivationCard } from "@/components/ui/PushActivationCard";
 import { cn } from "@/lib/utils";
 
 export default function POSPage() {
@@ -22,7 +23,7 @@ export default function POSPage() {
         {/* Left Side: Product Catalog */}
         <div className="flex-grow min-w-0 p-4 sm:p-6 flex flex-col overflow-x-hidden">
           <div className="w-full flex flex-col">
-            <header className="mb-1 shrink-0">
+            <header className="mb-4 shrink-0">
               <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-slate-900 italic">
                 VentaÁgil
               </h1>
@@ -30,6 +31,8 @@ export default function POSPage() {
                 Selecciona los productos para iniciar una venta
               </p>
             </header>
+
+            <PushActivationCard />
 
             {/* Tab Bar Container */}
             <div className="flex items-end gap-1 mb-2 overflow-x-auto pt-1 px-2 border-b-2 border-slate-200 custom-scrollbar shrink-0 min-h-[40px]">

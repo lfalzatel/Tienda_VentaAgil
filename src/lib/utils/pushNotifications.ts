@@ -59,6 +59,26 @@ export const requestPushPermission = async (userId: string): Promise<boolean> =>
   }
 };
 
+export const disablePushPermission = async (userId: string): Promise<boolean> => {
+  try {
+    if (!messaging) return false;
+    
+    // Eliminar token en Firebase FCM (esto revoca el acceso del dispositivo)
+    const { deleteToken } = await import("firebase/messaging");
+    await deleteToken(messaging);
+    
+    // Eliminar documento de FCM en la BD
+    const { deleteDoc } = await import("firebase/firestore");
+    await deleteDoc(doc(db, "fcm_tokens", userId));
+    
+    console.log("Notificaciones Push desactivadas para este dispositivo");
+    return true;
+  } catch (err) {
+    console.error("Error desactivando push:", err);
+    return false;
+  }
+};
+
 // Escuchar notificaciones cuando la app está en PRIMER PLANO
 export const onForegroundMessage = (callback: (payload: any) => void) => {
   if (!messaging) return () => {};

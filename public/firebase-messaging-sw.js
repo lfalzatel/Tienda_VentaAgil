@@ -16,7 +16,8 @@ messaging.onBackgroundMessage((payload) => {
     body,
     icon: "/icon-192x192.png",
     badge: "/icon-192x192.png",
-    vibrate: [200, 100, 200],
+    vibrate: [300, 100, 300, 100, 300], // Más intensidad de vibración
+    requireInteraction: true, // Que no se oculte sola tan rápido
     data: { url: payload.data?.link || "/" }
   });
 });

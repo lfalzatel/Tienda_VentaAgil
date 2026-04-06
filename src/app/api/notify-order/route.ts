@@ -1,48 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { adminDb, adminMessaging } from "@/lib/firebase/admin";
 
 export async function POST(req: NextRequest) {
   try {
     const { clientName, total } = await req.json();
 
-    // Obtener tokens FCM de todos los admins y propietarios
-    const usersSnap = await getDocs(
-      query(collection(db, "users"), where("role", "in", ["admin", "propietario"]))
-    );
+    // Obtener tokens FCM de todos los admins y propietarios usando adminDb
+    const usersSnap = await adminDb.collection("users").where("role", "in", ["admin", "propietario"]).get();
 
     const tokenPromises = usersSnap.docs.map(async (userDoc) => {
-      const tokenSnap = await getDocs(
-        query(collection(db, "fcm_tokens"), where("userId", "==", userDoc.id))
-      );
-      return tokenSnap.docs.map((d: any) => d.data().token);
+      const tokenSnap = await adminDb.collection("fcm_tokens").where("userId", "==", userDoc.id).get();
+      return tokenSnap.docs.map(d => d.data().token);
     });
 
     const tokenArrays = await Promise.all(tokenPromises);
     const tokens: string[] = tokenArrays.flat().filter(Boolean);
 
-    // Enviar push a cada token via FCM HTTP API
-    await Promise.all(tokens.map(token =>
-      fetch("https://fcm.googleapis.com/fcm/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `key=${process.env.FCM_SERVER_KEY}`
-        },
-        body: JSON.stringify({
-          to: token,
-          notification: {
-            title: "🛍️ Nuevo pedido recibido",
-            body: `${clientName} realizó un pedido por $${(total ?? 0).toLocaleString("es-CO")}`
-          },
-          data: { link: "/admin/orders" },
-          android: { priority: "high" },
-          apns: { payload: { aps: { sound: "default" } } }
-        })
-      })
-    ));
+    if (tokens.length === 0) {
+      return NextResponse.json({ ok: true, message: "No tokens found" });
+    }
 
-    return NextResponse.json({ ok: true });
+    // Enviar push a cada token usando firebase-admin SDK
+    const message = {
+      notification: {
+        title: "🛍️ Nuevo pedido recibido",
+        body: `${clientName} realizó un pedido por $${(total ?? 0).toLocaleString("es-CO")}`
+      },
+      data: { 
+        link: "/admin/orders" 
+      },
+      android: {
+        priority: "high" as const,
+        notification: {
+          sound: "default",
+          channelId: "default"
+        }
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            badge: 1
+          }
+        }
+      },
+      tokens: tokens
+    };
+
+    const response = await adminMessaging.sendEachForMulticast(message);
+    console.log(response.successCount + ' messages were sent successfully');
+
+    return NextResponse.json({ ok: true, successCount: response.successCount });
   } catch (err) {
     console.error("Notify order error:", err);
     return NextResponse.json({ error: "Error enviando notificación" }, { status: 500 });

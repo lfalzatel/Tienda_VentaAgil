@@ -11,7 +11,9 @@ import {
   Sun, 
   Monitor, 
   ChevronDown,
-  Smartphone
+  Smartphone,
+  BellRing,
+  BellOff
 } from "lucide-react";
 import { auth } from "@/lib/firebase/config";
 import { signOut } from "firebase/auth";
@@ -28,6 +30,7 @@ export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isBiometricRegistered, setIsBiometricRegistered] = useState(false);
+  const [isPushEnabled, setIsPushEnabled] = useState(false);
   const { user } = useAuthStore();
   const { deferredPrompt, setDeferredPrompt } = usePWAStore();
   const { showSplash, updateSplash } = useSplashStore();
@@ -49,6 +52,7 @@ export const UserMenu = () => {
   useEffect(() => {
     if (isOpen) {
       setIsBiometricRegistered(hasBiometricRegistered());
+      setIsPushEnabled(typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted");
     }
   }, [isOpen]);
 
@@ -60,6 +64,31 @@ export const UserMenu = () => {
     } else {
       alert("Para activar la biometría, cierra sesión e ingresa nuevamente con tu contraseña.");
     }
+  };
+
+  const handleTogglePush = async () => {
+    if (!user?.uid) return;
+    try {
+      if (isPushEnabled) {
+        const { disablePushPermission } = await import("@/lib/utils/pushNotifications");
+        await disablePushPermission(user.uid);
+        setIsPushEnabled(false);
+        alert("Notificaciones Push desactivadas para este dispositivo.");
+      } else {
+        const { requestPushPermission } = await import("@/lib/utils/pushNotifications");
+        const success = await requestPushPermission(user.uid);
+        if (success) {
+          setIsPushEnabled(true);
+          alert("¡Notificaciones Push activadas con éxito! Las alertas sonarán y vibrarán incluso con la app cerrada.");
+        } else {
+          alert("No se pudieron otorgar los permisos de notificación. Verifica los ajustes de tu navegador.");
+        }
+      }
+    } catch(err) {
+      console.error(err);
+      alert("Ocurrió un error al configurar las notificaciones.");
+    }
+    setIsOpen(false);
   };
 
   const handleInstallApp = async () => {
@@ -221,6 +250,21 @@ export const UserMenu = () => {
                     handleToggleBiometric();
                     setIsOpen(false);
                   }} 
+                />
+              )}
+
+              {/* Push Notifications Toggle */}
+              {isPushEnabled ? (
+                <MenuButton 
+                  icon={<BellOff size={18} className="text-amber-500 group-hover:text-amber-600" />} 
+                  label="Desactivar Alertas Push" 
+                  onClick={handleTogglePush} 
+                />
+              ) : (
+                <MenuButton 
+                  icon={<BellRing size={18} className="text-emerald-500 group-hover:text-emerald-600" />} 
+                  label="Activar Alertas Push" 
+                  onClick={handleTogglePush} 
                 />
               )}
 

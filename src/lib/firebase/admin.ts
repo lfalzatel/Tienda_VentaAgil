@@ -14,5 +14,6 @@ if (!admin.apps.length) {
 
 const adminAuth = admin.auth();
 const adminDb = admin.firestore();
+const adminMessaging = admin.messaging();
 
-export { adminAuth, adminDb };
+export { adminAuth, adminDb, adminMessaging };

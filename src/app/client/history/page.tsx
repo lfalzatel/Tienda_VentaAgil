@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { PushActivationCard } from "@/components/ui/PushActivationCard";
 
 // We extend jsPDF with autoTable type for TypeScript
 declare module 'jspdf' {
@@ -623,6 +624,8 @@ export default function ClientHistoryPage() {
       <Header title="Historial" />
       <main className="flex-grow p-4 sm:p-8 flex flex-col max-w-4xl mx-auto w-full space-y-6">
         
+        <PushActivationCard />
+
         {/* Resumen Card (Dinámica y Compacta) */}
         <div className="bg-slate-900 rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-slate-900/10 text-white relative overflow-hidden animate-in fade-in duration-500">
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>

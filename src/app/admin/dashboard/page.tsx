@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RecalculatePopularity } from "@/components/admin/RecalculatePopularity";
+import { PushActivationCard } from "@/components/ui/PushActivationCard";
 
 interface Sale {
   id: string;
@@ -300,6 +301,8 @@ export default function DashboardPage() {
             selectedDate={selectedDate}
           />
         </div>
+
+        <PushActivationCard />
 
         <StatsGrid 
           stats={stats} 
